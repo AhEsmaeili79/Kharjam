@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'apps.shares',
     'apps.transactions',
     'apps.users',
-    'apps.messages',
 ]
 
 MIDDLEWARE = [
