@@ -1,7 +1,11 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker,declarative_base
 
-DATABASE_URL = "sqlite:///user_service.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_PATH = os.path.join(BASE_DIR, "user_service.db")
+DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
+
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
