@@ -1,3 +1,4 @@
+@@ -0,0 +1,44 @@
 # Kharjam Backend
 
 This is the backend for the Kharjam project, built using FastAPI.
@@ -27,7 +28,12 @@ GitHub Repository: [Kharjam](https://github.com/AhEsmaeili79/Kharjam)
 
 3. Run the application:
     ```bash
-    uvicorn main:app --reload
+    uvicorn main:app --reload  
+    ```
+    OR 
+
+    ```bash
+    fastapi dev
     ```
 
 ## Usage
