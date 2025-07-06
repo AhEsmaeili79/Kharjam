@@ -27,12 +27,7 @@ GitHub Repository: [Kharjam](https://github.com/AhEsmaeili79/Kharjam)
 
 3. Run the application:
     ```bash
-    uvicorn main:app --reload  
-    ```
-    OR 
-
-    ```bash
-    fastapi dev
+    uvicorn main:app --reload
     ```
 
 ## Usage
