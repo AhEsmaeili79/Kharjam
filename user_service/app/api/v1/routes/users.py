@@ -19,7 +19,7 @@ def get_db():
 def create_user(user:UserCreate,db: Session = Depends(get_db)):
     db_user = db.query(User).filter((User.email == user.email) | (User.phone_number == user.phone_number)).first()
     if db_user :
-        raise HTTPException(status_code=400, detail="Email or already registred!")
+        raise HTTPException(status_code=400, detail="Email or Phone Number already registred!")
     
     hashed_password = bcrypt.hash(user.password)
     new_user = User(
