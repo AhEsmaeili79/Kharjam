@@ -1,11 +1,12 @@
 import token
 import uuid 
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, String, DateTime, ForeignKey
 from app.db.database import Base
 from sqlalchemy.sql import func
 
-class BlacklistToken(Base):
-    __table__ = "blacklisted_tokens"
+class BlacklistedToken(Base):
+    __tablename__ = "blacklisted_tokens"
+
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, ForeignKey("users.id",ondelete="CASCADE"),nullable=False)

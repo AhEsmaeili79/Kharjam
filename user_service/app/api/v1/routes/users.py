@@ -23,10 +23,10 @@ def create_user(user:UserCreate,db: Session = Depends(get_db)):
     
     hashed_password = bcrypt.hash(user.password)
     new_user = User(
-        nmae = user.name,
+        name = user.name,
         phone_number = user.phone_number,
         email = user.email,
-        Password_hash = hashed_password,
+        password_hash = hashed_password,
         role = user.role
     )
     db.add(new_user)
@@ -34,6 +34,6 @@ def create_user(user:UserCreate,db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-@router.get("/",response_model=list[UserOut])
+@router.get("/", response_model=list[UserOut])
 def list_users(db: Session = Depends(get_db)):
-    return db.query(User).all
+    return db.query(User).all()
