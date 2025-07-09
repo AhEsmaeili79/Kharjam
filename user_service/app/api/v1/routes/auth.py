@@ -19,6 +19,10 @@ class LoginRequest(BaseModel):
     
 class TokenResponse(BaseModel):
     access_token: str
+
+class LogoutResponse(BaseModel):
+    msg: str
+    
     
 def get_db():
     db = SessionLocal()
@@ -51,8 +55,11 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     return TokenResponse(access_token=access_token)
 
 
-@router.post("/logout")
-def logout(authorization: str = Header(...), db: Session = Depends(get_db)):
+@router.post("/logout", response_model=LogoutResponse)
+def logout(
+    authorization: str = Header(..., description="Authorization token with Bearer scheme", example="Bearer eyJ0eXAiOiJKV1QiLCJhbGci..."),
+    db: Session = Depends(get_db)
+):
     token = authorization.replace("Bearer ", "")
     payload = decode_access_token(token)
     if not payload:
