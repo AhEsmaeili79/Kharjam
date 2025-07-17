@@ -1,4 +1,3 @@
-@@ -0,0 +1,44 @@
 # Kharjam Backend
 
 This is the backend for the Kharjam project, built using FastAPI.
