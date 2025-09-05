@@ -1,3 +1,8 @@
 [submodule "Backend/user_service"]
 	path = Backend/user_service
 	url = https://github.com/AhEsmaeili79/user_service.git
+
+
+[submodule "Backend/split_service"]
+	path = Backend/split_service
+	url = https://github.com/AhEsmaeili79/split_service.git
