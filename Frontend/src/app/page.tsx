@@ -1,9 +1,13 @@
 "use client";
 
+import ChangeLocaleComponent from "@/components/ChangeLocaleComponent";
+import ToggleThemeComponent from "@/components/ToggleThemeComponent";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 export default function Home() {
+  const t = useTranslations();
   const [dark, setDark] = useState(false);
   useEffect(() => {
     if (dark) {
@@ -16,16 +20,13 @@ export default function Home() {
   return (
     <div className="flex-col">
       <p className="text-warning bg-primary-200">home page</p>
+        <h1 className="text-xl font-bold">{t("title")}</h1>
+      <p>{t("welcome")}</p>
+      <Button>{t("addExpense")}</Button>
+       <ChangeLocaleComponent/>
       <Button variant="ghost">shadcn button</Button>
 
-      <div className="flex flex-col items-center justify-center">
-        <button
-          onClick={() => setDark(!dark)}
-          className="px-4 py-2 rounded-lg text-white bg-accent-500"
-        >
-          {dark ? "☀️ Light Mode" : "🌙 Dark Mode"}
-        </button>
-      </div>
+      <ToggleThemeComponent/>
       <p>
         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده
         از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و
