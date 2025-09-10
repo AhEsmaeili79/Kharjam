@@ -1,19 +1,23 @@
-// "use_client"
-import "./globals.css";
-// import { Button } from "@/components/ui/button"
-// import Home from './home/page';
+"use client";
 
-import { Button } from "@/components/ui/button";
 import { ReactNode } from "react";
-import Home from "./page";
+import { NextIntlClientProvider } from "next-intl";
+import { defaultLocale } from "@/i18n";
+import "./globals.css";
+import { useLocale } from "@/utils/useLocaleUtil";
+import ResponsiveLayout from "@/layout/ResponsiveLayout";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const { mounted, currentLocale, messages } = useLocale();
+
   return (
-    <html lang="en">
-      <body className="bg-gray-500 size-full">
-        <h1 className="text-green-600">the layout</h1>
-        <main className="p-4">{children}</main>
-        <div></div>
+    <html lang={defaultLocale} dir={defaultLocale === "fa" ? "rtl" : "ltr"}>
+      <body className="bg-primary-100 w-full h-screen px-6">
+        <NextIntlClientProvider locale={currentLocale} messages={messages}>
+          {mounted && (
+            <ResponsiveLayout>{children}</ResponsiveLayout>
+          )}
+        </NextIntlClientProvider>
       </body>
     </html>
   );
