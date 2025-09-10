@@ -7,3 +7,6 @@
 [submodule "Backend/communication_service"]
 	path = Backend/communication_service
 	url = https://github.com/AhEsmaeili79/communication_service.git
+[submodule "Backend/system_service"]
+	path = Backend/system_service
+	url = https://github.com/AhEsmaeili79/system_service.git
