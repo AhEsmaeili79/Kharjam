@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { defaultLocale } from "@/i18n";
-import "./globals.css";
+import "../globals.css";
 import { useLocale } from "@/utils/useLocaleUtil";
 import ResponsiveLayout from "@/layout/ResponsiveLayout";
 

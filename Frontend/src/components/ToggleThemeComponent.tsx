@@ -3,18 +3,16 @@
 import { useThemeStore } from "@/store/useThemeStore";
 
 const ToggleThemeComponent = () => {
-    const { dark, toggleTheme } = useThemeStore();
+  const { dark, toggleTheme } = useThemeStore();
 
-    return (
-        <div className="flex flex-col items-center justify-center">
-            <button
-                onClick={toggleTheme}
-                className="px-4 py-2 rounded-lg text-white bg-accent-500"
-            >
-                {dark ? "☀️ Light Mode" : "🌙 Dark Mode"}
-            </button>
-        </div>
-    );
-}
+  return (
+    <div
+      className={`size-10 p-2 rounded-full flex items-center justify-center bg-sky-300 cursor-pointer shadow-md`}
+      onClick={toggleTheme}
+    >
+      {dark ? "☀️" : "🌙"}
+    </div>
+  );
+};
 
-export default ToggleThemeComponent
+export default ToggleThemeComponent;

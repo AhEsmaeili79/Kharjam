@@ -1,17 +1,16 @@
 import { create } from "zustand";
 
-interface ILocaleState {
+type LocaleStore = {
   locale: string;
   setLocale: (locale: string) => void;
-}
+};
 
-export const useLocaleStore = create<ILocaleState>((set) => ({
-  locale:
-    typeof window !== "undefined" ? localStorage.getItem("lang") || "fa" : "fa",
-  setLocale: (locale: string) => {
+export const useLocaleStore = create<LocaleStore>((set) => ({
+  locale: "fa",
+  setLocale: (locale) => {
     set({ locale });
     if (typeof window !== "undefined") {
-      localStorage.setItem("lang", locale);
+      localStorage.setItem("locale", locale);
     }
   },
 }));
