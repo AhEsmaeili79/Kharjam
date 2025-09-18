@@ -3,23 +3,20 @@
 import { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { defaultLocale } from "@/i18n";
-import "./globals.css";
+import "../globals.css";
 import { useLocale } from "@/utils/useLocaleUtil";
-import ToggleThemeComponent from "@/components/ToggleThemeComponent";
+import ResponsiveLayout from "@/layout/ResponsiveLayout";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const { currentLocale, messages } = useLocale();
+  const { mounted, currentLocale, messages } = useLocale();
 
   return (
     <html lang={defaultLocale} dir={defaultLocale === "fa" ? "rtl" : "ltr"}>
-      <body>
+      <body className="bg-primary-100 w-full h-screen px-6">
         <NextIntlClientProvider locale={currentLocale} messages={messages}>
-          <div className="w-full h-screen bg-[url('/bgLight.svg')] dark:bg-[url('/bgDark.png')] bg-no-repeat bg-cover bg-center flex items-center justify-center relative">
-         <div className="absolute top-5 right-5">
-          <ToggleThemeComponent/>
-         </div>
-            {children}
-          </div>
+          {mounted && (
+            <ResponsiveLayout>{children}</ResponsiveLayout>
+          )}
         </NextIntlClientProvider>
       </body>
     </html>
