@@ -1,8 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const OtpPage = () => {
+   const router = useRouter();
   return (
     <div>
       <div className="flex flex-col justify-center items-center">
@@ -40,8 +42,10 @@ const OtpPage = () => {
         </div>
       </div>
       <div className="w-full flex flex-col items-center justify-center mt-20">
-        <Button className="px-10 py-3 bg-sky-400 text-white font-bold rounded-full shadow-md">
-          send code
+        <Button
+        onClick={()=>router.push("/panel")}
+        className="px-10 py-3 bg-sky-400 text-white font-bold rounded-full shadow-md">
+          login
         </Button>
       </div>
     </div>

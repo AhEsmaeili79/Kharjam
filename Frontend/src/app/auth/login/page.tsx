@@ -27,7 +27,7 @@ const LoginPage = () => {
           <span>Sign in with Google</span>
         </Button>
         <Button
-          onClick={() => router.push("/login/otp")}
+          onClick={() => router.push("/auth/otp")}
           className="px-10 py-3 bg-sky-400 text-white font-bold rounded-full shadow-md"
         >
           send code
