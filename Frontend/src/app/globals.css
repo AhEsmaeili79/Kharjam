@@ -231,3 +231,6 @@
 .scrollbar::-webkit-scrollbar-thumb:hover {
   @apply !bg-base-400;
 }
+.auth-layout{
+  @apply w-full h-screen bg-[url('/bgLight.svg')] dark:bg-[url('/bgDark.png')] bg-no-repeat bg-cover bg-center flex items-center justify-center relative
+}
