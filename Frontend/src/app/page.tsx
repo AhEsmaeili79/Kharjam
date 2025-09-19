@@ -14,15 +14,11 @@ const SplashScreenPage = () => {
   }, [router]);
 
   return (
-    <html>
-      <body>
-        <div>
-          <div className="auth-layout">
-            <div className="size-32 bg-white rounded-[50%] flex items-center justify-center border border-primary-500 text-white"></div>
-          </div>
-        </div>
-      </body>
-    </html>
+    <div>
+      <div className="auth-layout">
+        <div className="size-32 bg-white rounded-[50%] flex items-center justify-center border border-primary-500 text-white"></div>
+      </div>
+    </div>
   );
 };
 export default SplashScreenPage;

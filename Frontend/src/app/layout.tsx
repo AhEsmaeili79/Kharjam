@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Kharjam",
   description: "split expenses with friends",
   icons: {
-    icon: "/logo.png", // must be inside /public
+    icon: "/logo.png",
   },
 };
 
