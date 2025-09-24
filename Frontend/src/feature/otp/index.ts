@@ -1,0 +1,1 @@
+export {default as OtpFeature} from './views/OtpIndex'
