@@ -57,7 +57,7 @@ const OtpPage = () => {
               />
             ))}
           </div>
-          <p className=" text-center mt-4 text-base-500">Resend code 00:20</p>
+          <p className=" text-center mt-4 ">Resend code 00:20</p>
         </div>
       </div>
       <div className="w-full flex flex-col items-center justify-center mt-20">

@@ -8,21 +8,21 @@ const LoginPage = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col justify-center items-center">
-        <div className="bg-[#fefefe] rounded-[50%] flex items-center justify-center border border-primary-500">
+        <div className="bg-back rounded-[50%] flex items-center justify-center border border-sky-500">
           <img src="/character.png" alt="character" className="size-40" />
         </div>
-        <p className="mt-4 text-3xl text-primary-700 font-bold">Welcome, friend!</p>
-        <p className="mt-1 mb-4 text-primary-600 text-sm font-medium">
+        <p className="mt-4 text-3xl text-text-base font-bold">Welcome, friend!</p>
+        <p className="mt-1 mb-4 text-text-secondary text-sm font-medium">
           Welcome back, please log in to continue.
         </p>
         <div className="w-10/12 h-14 relative flex justify-center">
-          <div className="size-6 absolute bg-sky-200 rounded-full right-4 top-1/2 -translate-y-1/2"></div>
+          <div className="size-6 absolute rounded-full right-4 top-1/2 -translate-y-1/2"></div>
           <input
             type="text"
             inputMode="email"
             autoComplete="email tel"
             aria-label="Email or Phone Number"
-            className="size-full border rounded-xl px-4 outline-none bg-white border-sky-500 focus:border-sky-700 focus:ring-2 focus:ring-sky-200 transition"
+            className="size-full border rounded-xl px-4 outline-none bg-input border-sky-500 transition"
             placeholder="Email or Phone Number"
           />
         </div>
