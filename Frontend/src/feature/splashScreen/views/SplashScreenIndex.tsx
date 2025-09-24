@@ -13,7 +13,9 @@ const SplashScreenIndex = () =>{
         
 <div>
       <div className="auth-layout">
-        <div className="size-32 bg-white rounded-[50%] flex items-center justify-center border border-primary-500 text-white"></div>
+      <div className="character">
+          <img src="/character.png" alt="character" className="size-40" />
+        </div>
       </div>
     </div>
     

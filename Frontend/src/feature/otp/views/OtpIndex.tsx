@@ -30,7 +30,9 @@ const OtpIndex = () =>{
 
         <div>
         <div className="flex flex-col justify-center items-center">
-          <img src="/character.png" alt="character" className="size-44" />
+        <div className="character">
+          <img src="/character.png" alt="character" className="size-40" />
+        </div>
           <p className="mt-4 text-3xl text-primary-700 font-bold">
             Enter OTP code
           </p>

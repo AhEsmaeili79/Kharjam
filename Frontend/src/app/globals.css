@@ -24,7 +24,7 @@
   --color-text-secondary: #C4C6C8; 
   --color-text-link: #66A1CD;
   --color-input: #3A5068;
-  --color-bg :#1A2033;
+  --color-bg :#1A2537;
 }
 
 .scrollbar::-webkit-scrollbar {
@@ -41,4 +41,8 @@
 }
 .auth-layout{
   @apply w-full h-screen bg-[url('/bgLight.svg')] dark:bg-[url('/bgDark.png')] bg-no-repeat bg-cover bg-center flex items-center justify-center relative
+}
+
+.character {
+  @apply  rounded-[50%] flex items-center justify-center border border-sky-500 bg-[#F5F5F5] dark:bg-[#3A5068] 
 }

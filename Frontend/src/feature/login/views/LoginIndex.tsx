@@ -8,7 +8,7 @@ const LoginIndex = () => {
   return <>
    <div className="w-full">
       <div className="flex flex-col justify-center items-center">
-        <div className="bg-back rounded-[50%] flex items-center justify-center border border-sky-500">
+        <div className="character">
           <img src="/character.png" alt="character" className="size-40" />
         </div>
         <p className="mt-4 text-3xl text-text-base font-bold">
