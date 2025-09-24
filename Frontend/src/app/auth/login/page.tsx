@@ -15,14 +15,14 @@ const LoginPage = () => {
         <p className="mt-1 mb-4 text-primary-600 text-sm font-medium">
           Welcome back, please log in to continue.
         </p>
-        <div className="w-full relative flex justify-center">
-          <div className="size-6 absolute bg-sky-200 rounded-full right-12 top-1/2 -translate-y-1/2"></div>
+        <div className="w-10/12 h-14 relative flex justify-center">
+          <div className="size-6 absolute bg-sky-200 rounded-full right-4 top-1/2 -translate-y-1/2"></div>
           <input
             type="text"
             inputMode="email"
             autoComplete="email tel"
             aria-label="Email or Phone Number"
-            className="h-14 w-10/12 border rounded-xl px-4 outline-none bg-white border-sky-500 focus:border-sky-700 focus:ring-2 focus:ring-sky-200 transition"
+            className="size-full border rounded-xl px-4 outline-none bg-white border-sky-500 focus:border-sky-700 focus:ring-2 focus:ring-sky-200 transition"
             placeholder="Email or Phone Number"
           />
         </div>
