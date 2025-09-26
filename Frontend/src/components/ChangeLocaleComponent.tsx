@@ -1,26 +1,29 @@
 "use client";
 
+import { useEffect } from "react";
 import { useLocaleStore } from "@/store/useLocaleStore";
+
 const ChangeLocaleComponent = () => {
   const { locale, setLocale } = useLocaleStore();
 
-  const languages = ["fa", "en"];
+  // ✅ Sync with localStorage after mount
+  useEffect(() => {
+    const saved = localStorage.getItem("locale");
+    if (saved) setLocale(saved);
+  }, [setLocale]);
+
+  const toggleLocale = () => {
+    setLocale(locale === "fa" ? "en" : "fa");
+  };
 
   return (
-    <div className="flex gap-2">
-      {languages.map((lang) => (
-        <button
-          key={lang}
-          disabled={locale === lang}
-          className={`px-2 py-1 border rounded ${
-            locale === lang ? "bg-blue-500 text-white" : ""
-          }`}
-          onClick={() => setLocale(lang)}
-        >
-          {lang === "fa" ? "فارسی" : "English"}
-        </button>
-      ))}
-    </div>
+    <button
+      onClick={toggleLocale}
+      className="flex items-center justify-center size-12 rounded-full border-2 border-sky-400 text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900 transition"
+    >
+      {locale === "fa" ? "EN" : "FA"}
+    </button>
   );
 };
+
 export default ChangeLocaleComponent;
