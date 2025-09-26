@@ -1,0 +1,1 @@
+export {default as SplashScreenFeature} from './views/SplashScreenIndex'
