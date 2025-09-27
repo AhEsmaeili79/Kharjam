@@ -31,11 +31,11 @@ const LoginIndex = () => {
       </div>
       <div className="w-full flex flex-col items-center justify-center mt-32">
         <Button
-          variant="outline"
-          className="h-11 flex items-center gap-3 px-6 bg-white text-gray-800 rounded-full shadow-sm mb-4"
+          variant="destructive"
+          className="h-11 flex items-center mb-4"
         >
           <img src="/google-icon.svg" alt="Google" className="w-6 h-6" />
-          <span>Sign in with Google</span>
+          <span >Sign in with Google</span>
         </Button>
         <Button size="lg" onClick={() => router.push("/auth/otp")}>
           Login
