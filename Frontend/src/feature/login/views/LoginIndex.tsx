@@ -18,7 +18,7 @@ const LoginIndex = () => {
           Welcome back, please log in to continue.
         </p>
         <div className="w-10/12 h-14 relative flex justify-center">
-          <div className="size-6 absolute rounded-full right-4 top-1/2 -translate-y-1/2"></div>
+          <div className="size-6 absolute rounded-full right-4 top-1/2 -translate-y-1/2 bg-sky-500"></div>
           <input
             type="text"
             inputMode="email"
@@ -33,9 +33,10 @@ const LoginIndex = () => {
         <Button
           variant="destructive"
           className="h-11 flex items-center mb-4"
+          
         >
           <img src="/google-icon.svg" alt="Google" className="w-6 h-6" />
-          <span >Sign in with Google</span>
+          <span className="text-text-base">Sign in with Google</span>
         </Button>
         <Button size="lg" onClick={() => router.push("/auth/otp")}>
           Login
