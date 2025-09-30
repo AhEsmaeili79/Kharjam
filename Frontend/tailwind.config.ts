@@ -15,7 +15,7 @@ const config: Config = {
           link: "var(--color-text-link)"
         },
         input: "var(--color-input)",
-        back: "var(--color-bg)"
+        back: "var(--color-back)"
       },
        },
   },
