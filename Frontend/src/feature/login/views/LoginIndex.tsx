@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ContactRound } from "lucide-react";
 import { Span } from "next/dist/trace";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +24,7 @@ const LoginIndex = () => {
             <Input
               placeholder="Email or Phone Number"
               addonAfter={
-                <span className="flex items-center justify-center text-text-base size-6 rounded-full bg-sky-500">0</span>
+                <ContactRound strokeWidth={1}  />
               }
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 console.log(e.target.value)
