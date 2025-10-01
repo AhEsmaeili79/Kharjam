@@ -6,7 +6,6 @@ import { useLocaleStore } from "@/store/useLocaleStore";
 const ChangeLocaleComponent = () => {
   const { locale, setLocale } = useLocaleStore();
 
-  // ✅ Sync with localStorage after mount
   useEffect(() => {
     const saved = localStorage.getItem("locale");
     if (saved) setLocale(saved);

@@ -1,3 +1,5 @@
+import { GoogleIcon } from "@/assets/icons/GoogleIcon";
+import { UserNameIcon } from "@/assets/icons/UserNameIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ContactRound } from "lucide-react";
@@ -24,7 +26,9 @@ const LoginIndex = () => {
             <Input
               placeholder="Email or Phone Number"
               addonAfter={
-                <ContactRound strokeWidth={1}  />
+                <span className="bg-sky-100 dark:bg-sky-900 size-9 rounded-md p-1 flex items-center justify-center">
+                  <UserNameIcon className="size-6 stroke-2 stroke-text-link"/>
+                </span>
               }
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 console.log(e.target.value)
@@ -34,7 +38,7 @@ const LoginIndex = () => {
         </div>
         <div className="w-full flex flex-col items-center justify-center mt-32">
           <Button variant="destructive" className="h-11 flex items-center mb-4">
-            <img src="/google-icon.svg" alt="Google" className="w-6 h-6" />
+            <GoogleIcon className="size-[18px]"/>
             <span className="text-text-base">Sign in with Google</span>
           </Button>
           <Button size="lg" onClick={() => router.push("/auth/otp")}>
