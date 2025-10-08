@@ -1,5 +1,15 @@
 {
   "title": "مدیریت گروهی مالی",
   "welcome": "خوش آمدید",
-  "addExpense": "افزودن هزینه"
+  "addExpense": "افزودن هزینه",
+  "login-welcome": "دوست عزیز، خوش اومدی!" ,
+  "login-subtext": "برای ادامه کار، وارد شوید." ,
+  "login-google": "با گوگل وارد شوید" ,
+  "login-btn": "دریافت کد",
+  "login-input-placeholder": "ایمیل/ شماره موبایل",
+  "otp-text": "کد یکبار مصرف" , 
+  "otp-subText": "کد دریافت شده را وارد کنید" ,
+  "otp-code" : "دریافت مجدد : " ,
+  "otp-btn" : "ورود"
+
 }
