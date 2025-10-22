@@ -1,6 +1,6 @@
 "use client";
 
-import { SplashScreenFeature } from "@/feature/splashScreen";
+import { SplashScreenFeature } from "@/features/splashScreen";
 
 const SplashScreenPage = () => {
   return <SplashScreenFeature />;
