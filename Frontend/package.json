@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "orval": "orval --config orval.config.ts"
-
+    "orval": "orval --config orval.config.ts",
+    "orval:watch": "orval --config orval.config.ts --watch"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
