@@ -1,5 +1,16 @@
 {
   "title": "Group Money Management",
   "welcome": "Welcome",
-  "addExpense": "Add Expense"
+  "addExpense": "Add Expense" ,
+
+  "login-welcome": "Welcome, friend!" ,
+  "login-subtext": "Welcome back, please log in to continue.",
+  "login-google": "Sign in with Google" ,
+  "login-btn": "enter otp",
+  "login-input-placeholder": "email / phone number",
+  "otp-text": "Enter OTP code" , 
+  "otp-subText": "Please enter the code sent to your phone" ,
+  "otp-code" : "resend code : " ,
+  "otp-btn" : "login"
+
 }
