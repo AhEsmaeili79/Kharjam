@@ -1,18 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPSlot } from "@/components/ui/input-otp";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 const OtpIndex = () => {
   const router = useRouter();
+  const t = useTranslations()
   return (
     <div>
       <div className="flex flex-col justify-center items-center">
         <div className="character">
           <img src="/character.png" alt="character" className="size-40" />
         </div>
-        <p className="mt-4 text-3xl text-text-base font-bold">Enter OTP code</p>
+        <p className="mt-4 text-3xl text-text-base font-bold">{t("otp-text")}</p>
         <p className="mt-1 mb-4 text-text-secondary text-sm font-medium">
-          Please enter the code sent to your phone
+          {t("otp-subText")}
         </p>
         <div className=" my-8">
           <InputOTP
@@ -25,10 +27,9 @@ const OtpIndex = () => {
             <InputOTPSlot index={2} />
             <InputOTPSlot index={3} />
             <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
           </InputOTP>
           <p className=" text-center mt-4 text-text-secondary">
-            Resend code 00:20
+            {t("otp-code")} 00:20
           </p>
         </div>
       </div>
@@ -37,7 +38,7 @@ const OtpIndex = () => {
           onClick={() => router.push("/panel")}
           className="h-12 px-10 bg-sky-400 hover:bg-sky-500 text-white font-bold rounded-full shadow-md"
         >
-          Login
+          {t("otp-btn")}
         </Button>
       </div>
     </div>
