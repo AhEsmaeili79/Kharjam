@@ -196,7 +196,7 @@ export default defineConfig(async () => {
             prettier: true,
             override: {
               mutator: {
-                path: "src/lib/axiosInstance.ts",
+                path: "src/lib/axiosClient.ts",
                 name: "axiosInstance",
               },
               // <-- removed 'operations' here to satisfy TypeScript
