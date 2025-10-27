@@ -16,7 +16,7 @@ const OtpIndex = () => {
         <p className="mt-1 mb-4 text-text-secondary text-sm font-medium">
           {t("otp-subText")}
         </p>
-        <div className=" my-8">
+        <div className=" my-8" dir="ltr">
           <InputOTP
             autoFocus
             maxLength={6}
