@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { useAuth } from "../hooks/useAuth";
+import { notify } from "@/lib/notify";
 
 const LoginIndex = () => {
   const {t, identifier, setIdentifier, requestOtpMutate, requestOtpPending } = useAuth();
@@ -36,7 +37,9 @@ const LoginIndex = () => {
           </div>
         </div>
         <div className="w-full flex flex-col items-center justify-center mt-32">
-          <Button variant="destructive" className="h-11 flex items-center mb-4">
+          <Button
+          onClick={(() =>{notify.error('test success')})}
+          variant="destructive" className="h-11 flex items-center mb-4">
             <GoogleIcon className="size-[18px]" />
             <span className="text-text-base">{t("login-google")}</span>
           </Button>
