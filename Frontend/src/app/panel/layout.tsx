@@ -18,11 +18,11 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
   const { mounted, currentLocale, messages } = useLocale();
   const router = useRouter();
 
-  useEffect(() => {
-    if (mounted && !isAuthenticated()) {
-      router.replace("/auth/login");
-    }
-  }, [mounted, router]);
+  // useEffect(() => {
+  //   if (mounted && !isAuthenticated()) {
+  //     router.replace("/auth/login");
+  //   }
+  // }, [mounted, router]);
 
   return (
     <NextIntlClientProvider locale={currentLocale} messages={messages}>
