@@ -2,7 +2,6 @@ import { GoogleIcon } from "@/assets/icons/GoogleIcon";
 import { UserNameIcon } from "@/assets/icons/UserNameIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTranslations } from "next-intl";
 import { useAuth } from "../hooks/useAuth";
 import { notify } from "@/lib/notify";
 
