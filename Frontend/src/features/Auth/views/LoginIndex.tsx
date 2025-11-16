@@ -3,11 +3,11 @@ import { UserNameIcon } from "@/assets/icons/UserNameIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "../hooks/useAuth";
-import { notify } from "@/lib/notify";
+import { notify } from "@/components/ui/sonner";
 
 const LoginIndex = () => {
-  const {t, identifier, setIdentifier, requestOtpMutate, requestOtpPending } = useAuth();
-
+  const {t, identifier, requestOtpMutate, requestOtpPending, handleInputChange } = useAuth();
+ 
   return (
     <>
       <div className="w-full">
@@ -24,14 +24,13 @@ const LoginIndex = () => {
           <div className="w-10/12">
             <Input
               placeholder={t("login-input-placeholder")}
+              value={identifier}
               addonAfter={
                 <span className="bg-sky-100 dark:bg-sky-900 size-9 rounded-md p-1 flex items-center justify-center">
                   <UserNameIcon className="size-6 stroke-2 stroke-text-link" />
                 </span>
               }
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setIdentifier(e.target.value)
-              }
+              onChange={handleInputChange}
             />
           </div>
         </div>
