@@ -8,6 +8,7 @@
   "login-google": "Sign in with Google" ,
   "login-btn": "enter otp",
   "login-input-placeholder": "email / phone number",
+  "login-input-error-keyboard": "Please use English keyboard",
   "otp-text": "Enter OTP code" , 
   "otp-subText": "Please enter the code sent to your phone" ,
   "otp-code" : "resend code : " ,

@@ -7,6 +7,7 @@
   "login-google": "با گوگل وارد شوید" ,
   "login-btn": "دریافت کد",
   "login-input-placeholder": "ایمیل/ شماره موبایل",
+  "login-input-error-keyboard": "لطفاً از کیبورد انگلیسی استفاده کنید",
   "otp-text": "کد یکبار مصرف" , 
   "otp-subText": "کد دریافت شده را وارد کنید" ,
   "otp-code" : "دریافت مجدد : " ,
