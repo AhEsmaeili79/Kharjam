@@ -1,5 +1,6 @@
 "use client";
-import { LoginFeature } from "@/features/login";
+
+import { LoginFeature } from "@/features/Auth";
 
 const LoginPage = () => {
   return <LoginFeature />;

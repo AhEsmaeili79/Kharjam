@@ -1,6 +1,6 @@
 "use client";
 
-import { OtpFeature } from "@/features/otp";
+import { OtpFeature } from "@/features/Auth";
 
 const OtpPage = () => {
   return <OtpFeature />;
