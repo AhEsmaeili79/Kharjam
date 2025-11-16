@@ -1,0 +1,61 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4.1-management
+    container_name: rabbitmq-broker
+    restart: unless-stopped
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-admin123}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-SWQOKODSQALRPCLNMEQG}
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_DEFAULT_PERMISSIONS: ".* .* .*"
+    ports:
+      - "${RABBITMQ_AMQP_PORT:-5672}:5672"    # AMQP port
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - rabbitmq-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+
+  rabbitmqscout:
+    image: ghcr.io/ralve-org/rabbitscout:latest
+    container_name: rabbitmqscout-monitor
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_RABBITMQ_HOST=rabbitmq-broker
+      - NEXT_PUBLIC_RABBITMQ_PORT=15672
+      - NEXT_PUBLIC_RABBITMQ_VHOST=/
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-admin}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-admin123}
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+    ports:
+      - "8090:3000"  # RabbitScout Web UI
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - rabbitmq-network
+    healthcheck:
+      test: ["CMD-SHELL", "node -e 'require(\"http\").get(\"http://0.0.0.0:3000/\", res => process.exit(res.statusCode===200?0:1)).on(\"error\", () => process.exit(1))'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+
+volumes:
+  rabbitmq_data:
+    driver: local
+
+networks:
+  rabbitmq-network:
+    driver: bridge

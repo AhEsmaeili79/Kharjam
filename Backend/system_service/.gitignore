@@ -1,0 +1,73 @@
+# RabbitMQ Data and Logs
+data/
+logs/
+*.log
+
+# Environment files (keep .example files)
+.env
+.env.local
+.env.production
+.env.staging
+
+# Docker volumes and data
+rabbitmq_data/
+volumes/
+
+# RabbitMQ specific files
+mnesia/
+*.pid
+*.sock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Node modules (if any frontend tools are used)
+node_modules/
+
+# Python cache (if any Python scripts)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Docker
+.dockerignore
+
+# Backup files
+*.orig
+*.rej
+
+# RabbitMQ management UI data
+management/
+
+# SSL certificates (if using custom certs)
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Configuration backups
+*.conf.bak
+*.json.bak
