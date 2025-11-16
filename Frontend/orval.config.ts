@@ -1,211 +1,144 @@
 /**
- * Orval config - async-safe, TS-friendly
+ * Tag-based Orval + React Query Hook Generator (clean version)
+ * - keeps all schemas inline in api.ts
+ * - exports each function directly (no service wrapper)
+ * - keeps your custom controllers/hooks format
  */
 import 'dotenv/config';
-import { defineConfig } from "orval";
-import fs from "fs";
-import path from "path";
-import axios from "axios";
+import { defineConfig } from 'orval';
+import fs from 'fs';
+import path from 'path';
+import axios from 'axios';
 
 const pascal = (s: string) =>
-  s.replace(/(^\w|[-_]\w)/g, (m) => m.replace(/[-_]/, "").toUpperCase());
+  s.replace(/(^\w|[-_]\w)/g, (m) => m.replace(/[-_]/, '').toUpperCase());
 
-const features = [
-  { name: "auth", swaggerUrl: process.env.NEXT_PUBLIC_AUTH_BASE_URL },
-  // add more...
-];
+const BASE_URL = process.env.NEXT_PUBLIC_AUTH_BASE_URL!;
 
 const ensureFeatureStructure = (feature: string) => {
   const base = path.resolve(`src/features/${feature}`);
-  ["helpers", "interfaces", "hooks", "views"].forEach((dir) => {
+  ['helpers', 'interfaces', 'hooks', 'views'].forEach((dir) => {
     const full = path.join(base, dir);
     if (!fs.existsSync(full)) fs.mkdirSync(full, { recursive: true });
   });
-  const indexFile = path.join(base, "index.ts");
+
+  const interfaceFile = path.join(base, 'interfaces', 'index.ts');
+  if (!fs.existsSync(interfaceFile)) {
+    fs.writeFileSync(
+      interfaceFile,
+      `// Custom interfaces and schema extensions for ${feature}\n\n`
+    );
+  }
+
+  const indexFile = path.join(base, 'index.ts');
   if (!fs.existsSync(indexFile)) {
     fs.writeFileSync(
       indexFile,
-      `// ${feature} feature entry\nexport * from './helpers/api';\nexport * from './hooks';\n`
+      `// ${feature} feature entry\nexport * from './helpers/api';\nexport * from './hooks/use${feature}';\n`
     );
   }
 };
 
-// const generateFeatureFiles = async (feature: string, swaggerUrl: string) => {
-//   if (!swaggerUrl) {
-//     console.warn(`⚠️ Missing swaggerUrl for feature "${feature}"`);
-//     return;
-//   }
-
-//   const base = path.resolve(`src/features/${feature}`);
-//   const controllerFile = path.join(base, "helpers", "controller.ts");
-//   const hooksDir = path.join(base, "hooks");
-
-//   const swagger = (await axios.get(swaggerUrl)).data;
-//   let controllerCode = `import { queryOptions, useQuery, useMutation } from '@tanstack/react-query';\nimport * as api from './api';\n\n`;
-
-//   for (const [pathKey, methods] of Object.entries(swagger.paths)) {
-//     for (const [method, details] of Object.entries(methods as any)) {
-//       const op = details as { operationId?: string };
-//       const rawName = op.operationId || `${method}_${pathKey.replace(/[\\/{}]/g, "_")}`;
-//       const funcName = pascal(rawName);
-//       const hookName = `use${funcName}`;
-//       const queryParams = `${funcName}QueryParams`;
-//       const responseType = `${funcName}Response`;
-
-//       if (method.toLowerCase() === "get") {
-//         controllerCode += `export const ${rawName}Controller = (
-//   params: ${queryParams},
-//   setData: (data: ${responseType}) => void
-// ) =>
-//   queryOptions({
-//     queryKey: ['${rawName}', params],
-//     queryFn: async () => {
-//       const res = await api.${rawName}(params);
-//       setData(res);
-//       return res;
-//     },
-//     retry: false,
-//     refetchOnMount: false,
-//     enabled: !!params,
-//   });\n\n`;
-
-//         const hookCode = `import { useQuery } from '@tanstack/react-query';\nimport { ${rawName}Controller } from '../helpers/controller';\nimport type { ${queryParams}, ${responseType} } from '../helpers/api';\n\nexport const ${hookName} = (params: ${queryParams}, setData: (data: ${responseType}) => void) => {\n  return useQuery(${rawName}Controller(params, setData));\n};\n`;
-//         fs.writeFileSync(path.join(hooksDir, `${hookName}.ts`), hookCode);
-//       } else {
-//         controllerCode += `export const ${rawName}Mutation = () => useMutation<${responseType}, Error, ${queryParams}>({
-//   mutationFn: api.${rawName},
-// });\n\n`;
-
-//         const hookCode = `import { ${rawName}Mutation } from '../helpers/controller';\nimport type { ${queryParams}, ${responseType} } from '../helpers/api';\n\nexport const ${hookName} = () => {\n  return ${rawName}Mutation();\n};\n`;
-//         fs.writeFileSync(path.join(hooksDir, `${hookName}.ts`), hookCode);
-//       }
-//     }
-//   }
-
-//   fs.writeFileSync(controllerFile, controllerCode);
-// };
-
-const generateFeatureFiles = async (feature: string, swaggerUrl: string) => {
-  if (!swaggerUrl) {
-    console.warn(`⚠️ Missing swaggerUrl for feature "${feature}"`);
-    return;
-  }
-
+/**
+ * Generate controller.ts + hook
+ */
+const generateFeatureFiles = async (feature: string, swagger: any) => {
   const base = path.resolve(`src/features/${feature}`);
-  const controllerFile = path.join(base, "helpers", "controller.ts");
-  const hooksFile = path.join(base, "hooks", "hooks.ts");
+  const controllerFile = path.join(base, 'helpers', 'controller.ts');
+  const hooksFile = path.join(base, 'hooks', `use${pascal(feature)}.ts`);
 
-  const swagger = (await axios.get(swaggerUrl)).data;
-  let controllerCode = `import { queryOptions, useQuery, useMutation } from '@tanstack/react-query';\nimport * as api from './api';\n\n`;
-  let hooksCode = "";
+  let controllerCode = `import { queryOptions, useMutation } from '@tanstack/react-query';\nimport * as api from './api';\n\n`;
+  let hooksCode = `import * as controller from "../helpers/controller";\nimport * as api from "../helpers/api";\n\n export const ${`use${feature}`} = () => {
+  return {  };
+};\n\n`;
 
   for (const [pathKey, methods] of Object.entries(swagger.paths)) {
     for (const [method, details] of Object.entries(methods as any)) {
-      const op = details as { operationId?: string };
+      const op = details as { operationId?: string; tags?: string[] };
+      if (!op.tags?.includes(feature)) continue;
+
       const rawName =
-        op.operationId || `${method}_${pathKey.replace(/[\\/{}]/g, "_")}`;
+        op.operationId || `${method}_${pathKey.replace(/[\\/{}]/g, '_')}`;
       const funcName = pascal(rawName);
-      const hookName = `use${funcName}`;
-      const queryParams = `${funcName}QueryParams`;
-      const responseType = `${funcName}Response`;
-
-      if (method.toLowerCase() === "get") {
-        // --- Controller
-        controllerCode += `export const ${rawName}Controller = (
-  params: ${queryParams},
-  setData: (data: ${responseType}) => void
-) =>
-  queryOptions({
-    queryKey: ['${rawName}', params],
-    queryFn: async () => {
-      const res = await api.${rawName}(params);
-      setData(res);
-      return res;
-    },
-    retry: false,
-    refetchOnMount: false,
-    enabled: !!params,
-  });\n\n`;
-
-        // --- Hook
-        hooksCode += `export const ${hookName} = (params: ${queryParams}, setData: (data: ${responseType}) => void) => {
-  return useQuery(${rawName}Controller(params, setData));
-};\n\n`;
-      } else {
-        // --- Controller
-        controllerCode += `export const ${rawName}Mutation = () => useMutation<${responseType}, Error, ${queryParams}>({
-  mutationFn: api.${rawName},
+      const controllerName = `${funcName}Controller`;
+      const hookName = `use${feature}`;
+      if (method.toLowerCase() === 'get') {
+        controllerCode += `export const ${controllerName} = (
+) => queryOptions({
+  queryKey: ['${rawName}'],
+  queryFn: async () => {
+    const res = await api.${rawName};
+    return res;
+  },
 });\n\n`;
 
-        // --- Hook
-        hooksCode += `export const ${hookName} = () => {
-  return ${rawName}Mutation();
-};\n\n`;
+//         hooksCode += `export const ${hookName} = () => {
+//   return {  };
+// };\n\n`;
+      } else {
+        controllerCode += `export const ${controllerName} = () =>
+  useMutation({
+    mutationFn: api.${rawName},
+  });\n\n`;
       }
     }
   }
 
   fs.writeFileSync(controllerFile, controllerCode);
-  fs.writeFileSync(
-    hooksFile,
-    `import { useQuery, useMutation } from '@tanstack/react-query';\nimport { ${Object.keys(
-      swagger.paths
-    )
-      .map((p) => {
-        const methods = Object.keys(swagger.paths[p]);
-        return methods
-          .map((m) => {
-            const op = (swagger.paths[p] as any)[m];
-            const rawName =
-              op.operationId || `${m}_${p.replace(/[\\/{}]/g, "_")}`;
-            return `${rawName}Controller, ${rawName}Mutation`;
-          })
-          .join(", ");
-      })
-      .join(", ")} } from '../helpers/controller';\nimport type * as api from '../helpers/api';\n\n${hooksCode}`
-  );
+  fs.writeFileSync(hooksFile, hooksCode);
 };
 
+/**
+ * MAIN CONFIG
+ */
 export default defineConfig(async () => {
-  // pre-generate folders & controllers/hooks
-  for (const f of features) {
-    ensureFeatureStructure(f.name);
-    try {
-      await generateFeatureFiles(f.name, f.swaggerUrl ?? "");
-    } catch (err: any) {
-      console.error(`❌ Error generating feature "${f.name}":`, err.message);
+  if (!BASE_URL) throw new Error('❌ Missing NEXT_PUBLIC_AUTH_BASE_URL');
+
+  console.log('📥 Fetching Swagger...');
+  const { data: swagger } = await axios.get(BASE_URL);
+
+  const tags = new Set<string>();
+  for (const pathKey in swagger.paths) {
+    for (const method in swagger.paths[pathKey]) {
+      const op = swagger.paths[pathKey][method];
+      if (op.tags && Array.isArray(op.tags)) {
+        op.tags.forEach((tag: string) => tags.add(tag));
+      }
     }
   }
 
-  // Return Orval config WITHOUT 'override.operations' to avoid TS mismatch
-  return Object.fromEntries(
-    features.map((f) => {
-      if (!f.swaggerUrl) {
-        throw new Error(`Missing swaggerUrl for feature "${f.name}"`);
-      }
+  console.log(`🧩 Found tags: ${[...tags].join(', ')}`);
 
-      return [
-        f.name,
-        {
-          input: { target: f.swaggerUrl! },
-          output: {
-            mode: "tags-split",
-            target: `src/features/${f.name}/helpers/api.ts`,
-            schemas: `src/features/${f.name}/interfaces`,
-            client: "axios",
-            prettier: true,
-            override: {
-              mutator: {
-                path: "src/lib/axiosInstance.ts",
-                name: "axiosInstance",
-              },
-              // <-- removed 'operations' here to satisfy TypeScript
-            },
+  const configs: Record<string, any> = {};
+
+  for (const tag of tags) {
+    ensureFeatureStructure(tag);
+    await generateFeatureFiles(tag, swagger);
+
+    configs[tag] = {
+      input: {
+        target: BASE_URL,
+        filters: { tags: [tag] },
+      },
+      output: {
+        mode: 'split',
+        target: `src/features/${tag}/helpers/api.ts`,
+        client: 'axios',
+        clean: false,
+        prettier: true,
+        override: {
+          mutator: {
+            path: 'src/lib/axiosClient.ts',
+            name: 'axiosInstance',
           },
+          // ✅ remove service wrapper completely
+          mock: { removeService: true },
+          client: { removeService: true },
         },
-      ];
-    })
-  );
-});
+      },
+    };
+  }
 
-// --- Merge all feature interfaces into a single file ---
+  console.log('✅ Finished generating Orval config for each tag!');
+  return configs;
+});

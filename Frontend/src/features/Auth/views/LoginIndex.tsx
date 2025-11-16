@@ -2,15 +2,12 @@ import { GoogleIcon } from "@/assets/icons/GoogleIcon";
 import { UserNameIcon } from "@/assets/icons/UserNameIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ContactRound } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Span } from "next/dist/trace";
-import { useRouter } from "next/navigation";
+import { useAuth } from "../hooks/useAuth";
+import { notify } from "@/lib/notify";
 
 const LoginIndex = () => {
-  const router = useRouter();
-  const t = useTranslations();
-
+  const {t, identifier, setIdentifier, requestOtpMutate, requestOtpPending } = useAuth();
 
   return (
     <>
@@ -30,21 +27,29 @@ const LoginIndex = () => {
               placeholder={t("login-input-placeholder")}
               addonAfter={
                 <span className="bg-sky-100 dark:bg-sky-900 size-9 rounded-md p-1 flex items-center justify-center">
-                  <UserNameIcon className="size-6 stroke-2 stroke-text-link"/>
+                  <UserNameIcon className="size-6 stroke-2 stroke-text-link" />
                 </span>
               }
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                console.log(e.target.value)
+                setIdentifier(e.target.value)
               }
             />
           </div>
         </div>
         <div className="w-full flex flex-col items-center justify-center mt-32">
-          <Button variant="destructive" className="h-11 flex items-center mb-4">
-            <GoogleIcon className="size-[18px]"/>
+          <Button
+          onClick={(() =>{notify.error('test success')})}
+          variant="destructive" className="h-11 flex items-center mb-4">
+            <GoogleIcon className="size-[18px]" />
             <span className="text-text-base">{t("login-google")}</span>
           </Button>
-          <Button size="lg" onClick={() => router.push("/auth/otp")}>
+          <Button
+            disabled={identifier === "" || requestOtpPending }
+            size="lg"
+            onClick={() => {
+              requestOtpMutate();
+            }}
+          >
             {t("login-btn")}
           </Button>
         </div>
