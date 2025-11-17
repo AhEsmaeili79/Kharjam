@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPSlot } from "@/components/ui/input-otp";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth"
 
-const OtpIndex = () => {  const {router, t, verifyOtp, verifyOtpMutate, verifyOtpPending, setVerifyOtp } =
+const OtpIndex = () => {  const { t, verifyOtp, verifyOtpMutate, verifyOtpPending, handleOtpChange, otpValue } =
     useAuth();
+
+ 
   return (
     <div>
       <div className="flex flex-col justify-center items-center">
@@ -20,15 +22,15 @@ const OtpIndex = () => {  const {router, t, verifyOtp, verifyOtpMutate, verifyOt
           <InputOTP
             autoFocus
             maxLength={6}
-            onChange={(value) => {
-              setVerifyOtp({...verifyOtp, otp_code:value})
-              console.log(value)}}
+            value={otpValue}
+            onChange={handleOtpChange}
           >
             <InputOTPSlot index={0} />
             <InputOTPSlot index={1} />
             <InputOTPSlot index={2} />
             <InputOTPSlot index={3} />
             <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
           </InputOTP>
           <p className=" text-center mt-4 text-text-secondary">
             {t("otp-code")} 00:20
