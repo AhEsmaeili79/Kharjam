@@ -10,6 +10,17 @@
   --color-input: var(--color-input);
   --color-back: var(--color-back)
 }
+body{
+  --font-fa: var(--font-baloo);
+  --font-en: var(--font-Nunito);
+}
+html[lang="fa"] body {
+  font-family: var(--font-fa);
+}
+
+html[lang="en"] body {
+  font-family: var(--font-en);
+}
 
 :root {
   --color-text-base: #414142; 
