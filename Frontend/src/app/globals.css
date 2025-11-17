@@ -10,6 +10,17 @@
   --color-input: var(--color-input);
   --color-back: var(--color-back)
 }
+body{
+  --font-fa: var(--font-baloo);
+  --font-en: var(--font-Nunito);
+}
+html[lang="fa"] body {
+  font-family: var(--font-fa);
+}
+
+html[lang="en"] body {
+  font-family: var(--font-en);
+}
 
 :root {
   --color-text-base: #414142; 
@@ -46,3 +57,9 @@
 .character {
   @apply  rounded-[50%] flex items-center justify-center border border-sky-500 bg-[#F5F5F5] dark:bg-[#3A5068] 
 }
+
+@keyframes fadeScale {
+  0% { opacity: 0.3; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
