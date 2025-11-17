@@ -57,3 +57,9 @@ html[lang="en"] body {
 .character {
   @apply  rounded-[50%] flex items-center justify-center border border-sky-500 bg-[#F5F5F5] dark:bg-[#3A5068] 
 }
+
+@keyframes fadeScale {
+  0% { opacity: 0.3; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
