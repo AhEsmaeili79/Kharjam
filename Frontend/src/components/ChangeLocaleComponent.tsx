@@ -7,8 +7,10 @@ const ChangeLocaleComponent = () => {
   const { locale, setLocale } = useLocaleStore();
 
   useEffect(() => {
-    const saved = localStorage.getItem("locale");
-    if (saved) setLocale(saved);
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("locale");
+      if (saved) setLocale(saved);
+    }
   }, [setLocale]);
 
   const toggleLocale = () => {
