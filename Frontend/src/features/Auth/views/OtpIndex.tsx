@@ -1,11 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPSlot } from "@/components/ui/input-otp";
-import { useAuth } from "../hooks/useAuth"
+import { useAuth } from "../hooks/useAuth";
+import Timer from "@/components/Timer";
 
-const OtpIndex = () => {  const { t, verifyOtp, verifyOtpMutate, verifyOtpPending, handleOtpChange, otpValue } =
-    useAuth();
-
+const OtpIndex = () => {
+  const {
+    t,
+    verifyOtp,
+    verifyOtpMutate,
+    verifyOtpPending,
+    handleOtpChange,
+    otpValue,
+    isRTL
+  } = useAuth();
  
+
   return (
     <div>
       <div className="flex flex-col justify-center items-center">
@@ -32,17 +41,21 @@ const OtpIndex = () => {  const { t, verifyOtp, verifyOtpMutate, verifyOtpPendin
             <InputOTPSlot index={4} />
             <InputOTPSlot index={5} />
           </InputOTP>
-          <p className=" text-center mt-4 text-text-secondary">
-            {t("otp-code")} 00:20
-          </p>
+          <div
+            className={`w-full flex items-center justify-center gap-3 mt-4 text-text-secondary ${
+              isRTL ? " flex-row" : "flex-row-reverse"
+            }`}
+          >
+            <Timer storageKey="otp-timer" minutes={3} />
+            <p className="whitespace-nowrap">{t("otp-code")}</p>
+          </div>
         </div>
       </div>
       <div className="w-full flex flex-col items-center justify-center mt-20">
         <Button
-        disabled={verifyOtpPending || verifyOtp.otp_code.length < 5}
+          disabled={verifyOtpPending || verifyOtp.otp_code.length < 5}
           onClick={() => {
-            verifyOtpMutate()
-           
+            verifyOtpMutate();
           }}
           className="h-12 px-10 bg-sky-400 hover:bg-sky-500 text-white font-bold rounded-full shadow-md"
         >

@@ -1,7 +1,7 @@
 import * as controller from "../helpers/controller";
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { isAuthenticated } from "@/lib/tokenManager";
 import { notify } from "@/components/ui/sonner";
 import { useLocaleStore } from "@/store/useLocaleStore";
@@ -9,8 +9,11 @@ import { useLocaleStore } from "@/store/useLocaleStore";
 export const useAuth = () => {
   const t = useTranslations();
   const router = useRouter();
+  const locales = useLocale();
+  const isRTL = locales === "fa" || locales === "ar";
   const [identifier, setIdentifier] = useState<string>("");
   const [authStatus, setAuthStatus] = useState<boolean>(false);
+  const pathName = usePathname()
 
   const [verifyOtp, setVerifyOtp] = useState({
     identifier: "",
@@ -28,6 +31,9 @@ export const useAuth = () => {
       }
       setAuthStatus(isAuthenticated());
     }
+
+    if(pathName !== '/auth/otp')
+      localStorage.removeItem('otp-timer')
   }, []);
 
   const { mutate: requestOtpMutate, isPending: requestOtpPending } =
@@ -109,6 +115,7 @@ export const useAuth = () => {
     isAuthenticated: authStatus,
     handleInputChange,
     handleOtpChange,
-    otpValue
+    otpValue,
+    isRTL
   };
 };
