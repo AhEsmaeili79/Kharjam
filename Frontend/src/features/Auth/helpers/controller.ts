@@ -12,13 +12,15 @@ const authApi = api.getUserService();
 export const RequestOtpApiController = (identifier: string, router: any) =>
   useMutation({
     mutationFn: () =>
-      authApi.requestOtpApi({ identifier }).then((res: any) => {
-        if (typeof window !== "undefined") {
-          window.alert(res.data.message);
-          localStorage.setItem("identifier", identifier);
-        }
-        router.push("/auth/otp");
-      }),
+      // authApi.requestOtpApi({ identifier }).then((res: any) => {
+      //   if (typeof window !== "undefined") {
+      //     window.alert(res.data.message);
+      //     localStorage.setItem("identifier", identifier);
+      //   }
+      //   router.push("/auth/otp");
+      // }),
+      router.push("/auth/otp")
+
   });
 
 export const VerifyOtpApiController = (
