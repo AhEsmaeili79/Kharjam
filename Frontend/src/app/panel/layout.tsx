@@ -7,6 +7,8 @@ import ResponsiveLayout from "@/layout/ResponsiveLayout";
 import "../globals.css";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/tokenManager";
+import ToggleThemeComponent from "@/components/ToggleThemeComponent";
+import ChangeLocaleComponent from "@/components/ChangeLocaleComponent";
 
 export default function PanelLayout({ children }: { children: ReactNode }) {
   const { mounted, currentLocale, messages } = useLocale();
@@ -20,15 +22,14 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
 
   return (
     <NextIntlClientProvider locale={currentLocale} messages={messages}>
-      <div
-        className="bg-primary-100 w-full h-screen px-6"
-        suppressHydrationWarning
-      >
-        {mounted ? (
-          <ResponsiveLayout>{children}</ResponsiveLayout>
-        ) : (
-          <div />
-        )}
+      <div className="auth-layout">
+      <div className="absolute top-5 right-5">
+          <ToggleThemeComponent />
+        </div>
+        <div className="absolute top-5 left-5">
+          <ChangeLocaleComponent />
+        </div>
+        {mounted && <ResponsiveLayout>{children}</ResponsiveLayout>}
       </div>
     </NextIntlClientProvider>
   );
