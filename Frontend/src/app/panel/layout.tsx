@@ -20,15 +20,8 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
 
   return (
     <NextIntlClientProvider locale={currentLocale} messages={messages}>
-      <div
-        className="bg-primary-100 w-full h-screen px-6"
-        suppressHydrationWarning
-      >
-        {mounted ? (
-          <ResponsiveLayout>{children}</ResponsiveLayout>
-        ) : (
-          <div />
-        )}
+      <div className="auth-layout">
+        {mounted && <ResponsiveLayout>{children}</ResponsiveLayout>}
       </div>
     </NextIntlClientProvider>
   );
