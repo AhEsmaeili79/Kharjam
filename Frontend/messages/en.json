@@ -9,5 +9,12 @@
   "otp-subText": "Please enter the code sent to your phone" ,
   "otp-code" : "resend code : " ,
   "otp-btn" : "login",
-  "profile-header": "edit profile"
+  "profile-header": "Edit profile",
+  "profile-subHeader": "complete / change information",
+  "profile-fullname-placeholder" : "ّFullName",
+  "profile-phone-placeholder" : "Mobile",
+  "profile-email-placeholder" : "Email",
+  "profile-submit-btn":"save changes",
+  "profile-cards-btn":"cards",
+  "verify":"verify"
 }

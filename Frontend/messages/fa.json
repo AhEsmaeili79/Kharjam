@@ -9,7 +9,12 @@
   "otp-subText": "کد دریافت شده را وارد کنید" ,
   "otp-code" : ":دریافت مجدد کد" ,
   "otp-btn" : "ورود",
-  "profile-header": "ویرایش پروفایل"
-
-
+  "profile-header": "ویرایش پروفایل",
+  "profile-subHeader": "تکمیل / ویرایش پروفایل", 
+  "profile-fullname-placeholder" : "نام ",
+  "profile-phone-placeholder" : "موبایل",
+  "profile-email-placeholder" : "ایمیل",
+  "profile-submit-btn":"ذخیره",
+  "profile-cards-btn":"کارت‌ها",
+  "verify":"احراز"
 }

@@ -1,3 +1,6 @@
+"use client";
+
+
 import { ProfileIndexFeature } from "@/features/User";
 
 const ProfilePage = () => {
