@@ -30,8 +30,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           className={cn(
             "flex h-14 w-full rounded-xl border outline-none bg-input border-sky-500 dark:border-none pl-4 pr-12 py-2 text-sm shadow-xs transition-colors placeholder:text-text-secondary text-text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-sky-50 hover:dark:bg-input/70",
-            hasBefore && "pl-12",
-            hasAfter && "pr-16",
+            hasBefore? "pl-12" : "pl-4",
+            hasAfter ? "pr-16" : "pr-4",
+
             className
           )}
           {...props}
