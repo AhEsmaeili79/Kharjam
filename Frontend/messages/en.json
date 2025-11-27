@@ -1,8 +1,4 @@
 {
-  "title": "Group Money Management",
-  "welcome": "Welcome",
-  "addExpense": "Add Expense" ,
-
   "login-welcome": "Welcome, friend!" ,
   "login-subtext": "Welcome back, please log in to continue.",
   "login-google": "Sign in with Google" ,
@@ -12,6 +8,13 @@
   "otp-text": "Enter OTP code" , 
   "otp-subText": "Please enter the code sent to your phone" ,
   "otp-code" : "resend code : " ,
-  "otp-btn" : "login"
-
+  "otp-btn" : "login",
+  "profile-header": "Edit profile",
+  "profile-subHeader": "complete / change information",
+  "profile-fullname-placeholder" : "ّFullName",
+  "profile-phone-placeholder" : "Mobile",
+  "profile-email-placeholder" : "Email",
+  "profile-submit-btn":"save changes",
+  "profile-cards-btn":"cards",
+  "verify":"verify"
 }
