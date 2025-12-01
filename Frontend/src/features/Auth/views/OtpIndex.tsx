@@ -39,7 +39,6 @@ const OtpIndex = () => {
             <InputOTPSlot index={2} />
             <InputOTPSlot index={3} />
             <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
           </InputOTP>
           <div
             className={`w-full flex items-center justify-center gap-3 mt-4 text-text-secondary ${
