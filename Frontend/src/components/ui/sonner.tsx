@@ -3,12 +3,13 @@
 import { Toaster as Sonner } from "sonner";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { useLocaleStore } from "@/store/useLocaleStore";
 import { defaultLocale } from "@/i18n";
+import { XIcon } from "@/assets/icons/CrossIcon";
+import { DangerIcon } from "@/assets/icons/DangerIcon";
+import { CheckICon } from "@/assets/icons/CheckIcon";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
-
 type Lang = "fa" | "en";
 
 const baseOptions = {
@@ -23,96 +24,67 @@ const getLocale = (): Lang => {
   return (locale === "fa" || locale === "en" ? locale : defaultLocale) as Lang;
 };
 
-export function Toaster({ className, ...props }: ToasterProps) {
-  return (
-    <Sonner
-      className={cn("toaster group", className)}
-      toastOptions={{
-        classNames: {
-          toast:
-            "group toast bg-background text-foreground border shadow-lg rounded-xl px-5 py-3 flex items-center justify-center gap-3 text-sm font-medium",
-          description: "text-muted-foreground text-xs",
-          actionButton:
-            "inline-flex h-8 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-medium px-3 shadow transition-all hover:bg-primary/90",
-          cancelButton:
-            "inline-flex h-8 items-center justify-center rounded-md border text-xs font-medium px-3 shadow-sm hover:bg-accent",
-        },
-      }}
-      {...props}
-    />
+const showToast = (message: string, icon: React.ReactNode, lang?: Lang) => {
+  const currentLang = lang ?? getLocale();
+
+  const content = (
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-xl px-6",
+        isRTL(currentLang) ? "text-left" : "flex-row-reverse  text-right",
+        "text-xl font-bold text-text-base"
+      )}
+    >
+      <div className={`!bg-none ${isRTL(currentLang) ? "order-1" : "order-2"}`}>
+        {icon}
+      </div>
+      <div
+        className={`leading-tight break-words ${
+          isRTL(currentLang) ? "order-2" : "order-1"
+        }`}
+      >
+        {message}
+      </div>
+    </div>
   );
+
+  return toast(content, {
+    ...baseOptions,
+    classNames: {
+      toast: `p-0 !bg-transparent !border-none backdrop-blur-md`,
+    },
+  });
+};
+
+export function Toaster({ className, ...props }: ToasterProps) {
+  return <Sonner className={cn("toaster group", className)} {...props} />;
 }
 
 export const notify = {
-  success: (message: string, lang?: Lang) => {
-    const currentLang = lang ?? getLocale();
-    return toast(message, {
-      ...baseOptions,
-      icon: (
-        <CheckCircle2
-          className={`w-5 h-5 ${
-            isRTL(currentLang)
-              ? "order-2 text-green-500"
-              : "order-1 text-green-500"
-          }`}
-        />
-      ),
-      classNames: {
-        toast: `
-          flex items-center gap-3 
-          ${isRTL(currentLang) ? "flex-row-reverse text-right" : "text-left"}
-          bg-green-50 border border-green-300 text-green-800
-          dark:bg-green-900/30 dark:text-green-100 dark:border-green-700
-          rounded-xl px-5 py-3 shadow-md`,
-      },
-    });
-  },
+  success: (message: string, lang?: Lang) =>
+    showToast(
+      message,
+      <div className="size-12 rounded-full flex items-center justify-center bg-green-500">
+        <CheckICon className="size-7 text-white" />
+      </div>,
+      lang
+    ),
 
-  error: (message: string, lang?: Lang) => {
-    const currentLang = lang ?? getLocale();
-    return toast(message, {
-      ...baseOptions,
-      icon: (
-        <XCircle
-          className={`w-5 h-5 ${
-            isRTL(currentLang)
-              ? "order-2 text-red-500"
-              : "order-1 text-red-500"
-          }`}
-        />
-      ),
-      classNames: {
-        toast: `
-          flex items-center gap-3 
-          ${isRTL(currentLang) ? "flex-row-reverse text-right" : "text-left"}
-          bg-red-50 border border-red-300 text-red-800
-          dark:bg-red-900/30 dark:text-red-100 dark:border-red-700
-          rounded-xl px-5 py-3 shadow-md`,
-      },
-    });
-  },
+  error: (message: string, lang?: Lang) =>
+    showToast(
+      message,
+      <div className="size-12 rounded-full flex items-center justify-center bg-red-500">
+        <XIcon className="size-7 text-white" />
+      </div>,
+      lang
+    ),
 
-  warning: (message: string, lang?: Lang) => {
-    const currentLang = lang ?? getLocale();
-    return toast(message, {
-      ...baseOptions,
-      icon: (
-        <AlertTriangle
-          className={`w-5 h-5 ${
-            isRTL(currentLang)
-              ? "order-2 text-yellow-500"
-              : "order-1 text-yellow-500"
-          }`}
-        />
-      ),
-      classNames: {
-        toast: `
-          flex items-center gap-3 
-          ${isRTL(currentLang) ? "flex-row-reverse text-right" : "text-left"}
-          bg-yellow-50 border border-yellow-300 text-yellow-800
-          dark:bg-yellow-900/30 dark:text-yellow-100 dark:border-yellow-700
-          rounded-xl px-5 py-3 shadow-md`,
-      },
-    });
-  },
+  warning: (message: string, lang?: Lang) =>
+    showToast(
+      message,
+      <div className="size-12 rounded-full flex items-center justify-center bg-yellow-500">
+      <DangerIcon className="size-7 text-white" />
+    </div>,
+      lang
+    ),
 };
