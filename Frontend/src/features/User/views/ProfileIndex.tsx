@@ -5,28 +5,33 @@ import { CreditCardIcon } from "@/assets/icons/CreditCardIcon";
 import { ImageIcon } from "@/assets/icons/ImageIcon";
 
 const ProfileIndex = () => {
-  const { t, handleImage, preview } = useUser();
+  const { t, handleImage, preview, fileInputRef,handleClick } = useUser();
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
-      <div className="relative flex items-center justify-center cursor-pointer">
-        <div className="w-40 h-40 rounded-full border-4 border-sky-200 flex items-center justify-center bg-inherit overflow-hidden">
-          <img
-            src={preview}
-            alt="avatar"
-            className="size-full object-contain"
-          />
-        </div>
-        <div className="absolute right-0 top-3/4 -translate-y-1/2 bg-sky-400 shadow-md rounded-full p-1">
-          <ImageIcon className="w-4 h-4 stroke-gray-100" />
-        </div>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImage}
-          className="hidden"
+       <div
+      className="relative flex items-center justify-center cursor-pointer"
+      onClick={handleClick}
+    >
+      <div className="w-40 h-40 rounded-full border-4 border-sky-200 flex items-center justify-center bg-inherit overflow-hidden">
+        <img
+          src={preview}
+          alt="avatar"
+          className="size-full object-contain"
         />
       </div>
+
+      <div className="absolute right-0 top-3/4 -translate-y-1/2 bg-sky-400 shadow-md rounded-full p-1">
+        <ImageIcon className="w-4 h-4 stroke-gray-100" />
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImage}
+        className="hidden"
+      />
+    </div>
       <p className="mt-4 text-3xl text-text-base font-bold">
         {t("profile-header")}
       </p>
