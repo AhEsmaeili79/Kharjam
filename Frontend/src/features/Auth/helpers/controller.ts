@@ -14,14 +14,12 @@ export const RequestOtpApiController = (identifier: string, router: any) =>
     mutationFn: () =>
       authApi.requestOtpApi({ identifier }).then((res: any) => {
         if (typeof window !== "undefined") {
-          
           window.alert(res.data.message);
           localStorage.setItem("identifier", identifier);
         }
         router.push("/auth/otp");
       }),
-      // router.push("/auth/otp")
-
+    // router.push("/auth/otp")
   });
 
 export const VerifyOtpApiController = (
@@ -29,18 +27,16 @@ export const VerifyOtpApiController = (
   router: any
 ) =>
   useMutation({
-    mutationFn: () =>
-      authApi.verifyOtpApi(verifyOtp).then((res: any) => {
-        // ذخیره token‌ها بعد از لاگین موفق
-        const { access_token, refresh_token } = res.data;
-        setTokens(access_token, refresh_token);
-        
-        if (typeof window !== "undefined") {
-          window.alert(res.data.message);
-          localStorage.removeItem("identifier");
-        }
-        router.push("/panel");
-      }),
+    mutationFn: () => authApi.verifyOtpApi(verifyOtp),
+    onSuccess: (res: any) => {
+      const { access_token, refresh_token } = res.data;
+      setTokens(access_token, refresh_token);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("identifier");
+      }
+
+      router.push("/panel");
+    },
   });
 
 export const RefreshTokenApiController = () =>

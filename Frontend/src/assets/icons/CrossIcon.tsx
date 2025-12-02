@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { IconProps } from "./interface";
 
-export const CreditCardIcon: FC<IconProps> = ({ className, ...props }) => {
+export const XIcon: FC<IconProps> = ({ className, ...props }) => {
   return (
     <svg
       fill="none"
@@ -11,13 +11,11 @@ export const CreditCardIcon: FC<IconProps> = ({ className, ...props }) => {
       strokeLinecap="round"
       strokeLinejoin="round"
       xmlns="http://www.w3.org/2000/svg"
-      className={`lucide lucide-credit-card-icon lucide-credit-card ${
-        className ?? ""
-      }`}
+      className={`lucide lucide-x-icon lucide-x ${className ?? ""}`}
       {...props}
     >
-      <rect width="20" height="14" x="2" y="5" rx="2" />
-      <line x1="2" x2="22" y1="10" y2="10" />
+       <path d="M18 6 6 18" />
+       <path d="m6 6 12 12" />
     </svg>
   );
 };

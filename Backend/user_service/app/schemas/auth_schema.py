@@ -54,6 +54,7 @@ class VerifyOTPRequest(BaseModel):
 class RequestOTPResponse(BaseModel):
     message: str
     identifier_type: str
+    otp_code: Optional[str] = None  # For testing purposes
 
 
 class VerifyOTPResponse(BaseModel):

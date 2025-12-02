@@ -12,6 +12,7 @@ export const ImageIcon: FC<IconProps> = ({ className, ...props }) => {
       strokeLinejoin="round"
       xmlns="http://www.w3.org/2000/svg"
       className={`lucide lucide-image-icon lucide-image ${className ?? ""}`}
+      {...props}
     >
       <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
       <circle cx="9" cy="9" r="2" />

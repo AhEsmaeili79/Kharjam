@@ -54,15 +54,28 @@ def request_otp(request: RequestOTPRequest, db: Session = Depends(get_db)):
     # Create OTP
     otp = OTPHandler.create_otp(user.id)
 
-    # Send OTP message to RabbitMQ
-    success = OTPHandler.send_otp_message(request.identifier, otp["code"], identifier_type)
+    # Normalize identifier for sending (especially for phone numbers)
+    send_identifier = request.identifier
+    if identifier_type == "phone_number":
+        send_identifier = normalize_phone_number(request.identifier)
 
-    if not success:
-        raise HTTPException(status_code=500, detail="Failed to send OTP message")
+    # Send OTP message to RabbitMQ (non-blocking - don't fail if RabbitMQ is unavailable)
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    message_sent = OTPHandler.send_otp_message(send_identifier, otp["code"], identifier_type)
+
+    if message_sent:
+        message = f"OTP sent successfully to your {identifier_type}"
+    else:
+        # RabbitMQ unavailable, but OTP is still generated and cached
+        logger.warning(f"RabbitMQ unavailable - OTP generated but not sent via message queue for {identifier_type}: {send_identifier}")
+        message = f"OTP generated successfully. Note: Message service is currently unavailable. Please use the OTP code provided in the response for testing."
 
     return RequestOTPResponse(
-        message=f"OTP sent successfully to your {identifier_type}",
-        identifier_type=identifier_type
+        message=message,
+        identifier_type=identifier_type,
+        otp_code=otp["code"]  # Include OTP code in response for testing
     )
 
 
