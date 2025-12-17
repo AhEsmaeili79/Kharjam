@@ -1,5 +1,5 @@
 """Auth API routes"""
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.apps.auth.schemas import (
@@ -32,7 +32,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
 )
-def request_otp(request: RequestOTPRequest, db: Session = Depends(get_db)):
+def request_otp(request: RequestOTPRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """Request OTP"""
     user = UserSelector.get_by_identifier(db, request.identifier)
     identifier_type = OTPService.get_identifier_type(request.identifier)
@@ -55,18 +55,19 @@ def request_otp(request: RequestOTPRequest, db: Session = Depends(get_db)):
     # Create OTP
     otp = OTPService.create_otp(user.id)
 
-    # Send OTP message
+    # Send OTP message in background
     send_identifier = request.identifier
     if identifier_type == "phone_number":
         send_identifier = normalize_phone_number(request.identifier)
 
-    message_sent = OTPService.send_otp_message(send_identifier, otp["code"], identifier_type)
-
-    message = (
-        f"OTP sent successfully to your {identifier_type}"
-        if message_sent
-        else f"OTP generated successfully. Note: Message service is currently unavailable."
+    background_tasks.add_task(
+        OTPService.send_otp_message,
+        send_identifier,
+        otp["code"],
+        identifier_type
     )
+
+    message = f"OTP generated successfully. Note: Message service is currently unavailable."
 
     return RequestOTPResponse(
         message=message,

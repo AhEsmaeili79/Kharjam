@@ -114,7 +114,6 @@ def fake_producer(monkeypatch: pytest.MonkeyPatch) -> FakeProducer:
     producer = FakeProducer()
     monkeypatch.setattr("app.core.rabbitmq.get_rabbitmq_producer", lambda: producer)
     monkeypatch.setattr("app.apps.auth.services.otp_service.get_rabbitmq_producer", lambda: producer)
-    monkeypatch.setattr("app.tasks.user_lookup_consumer.get_rabbitmq_producer", lambda: producer)
     return producer
 
 
@@ -129,7 +128,6 @@ def client(
     # Prevent startup hooks from touching external services
     monkeypatch.setattr("app.main.init_rabbitmq", lambda: None)
     monkeypatch.setattr("app.main.init_redis", lambda: None)
-    monkeypatch.setattr("app.main.start_consumer", lambda: None)
 
     def override_get_db():
         yield db_session

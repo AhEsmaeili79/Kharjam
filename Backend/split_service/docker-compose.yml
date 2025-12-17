@@ -28,7 +28,7 @@ services:
     image: kharjam/split-service:v1.0.0
     container_name: kharjam-split-service
     ports:
-      - "8003:8000"
+      - "802:8000"
     env_file:
       - .env
     environment:

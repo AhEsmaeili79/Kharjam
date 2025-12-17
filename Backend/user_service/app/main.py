@@ -18,7 +18,6 @@ from app.core.exceptions import (
     validation_exception_handler,
     general_exception_handler,
 )
-from app.tasks.user_lookup_consumer import start_consumer, stop_consumer
 from app.config import app_config
 
 
@@ -27,18 +26,7 @@ async def lifespan(app_instance: FastAPI):
     """Application lifespan context to manage startup/shutdown hooks."""
     init_rabbitmq()
     init_redis()
-    try:
-        start_consumer()
-        print("✅ Consumer started")
-    except Exception as e:
-        print(f"⚠️ Consumer failed: {e}")
-
     yield
-
-    try:
-        stop_consumer()
-    except Exception:
-        pass
 
 
 app = FastAPI(
