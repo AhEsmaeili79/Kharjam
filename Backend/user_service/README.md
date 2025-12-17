@@ -93,7 +93,7 @@ user_service/
 - **PyJWT** - JSON Web Token implementation
 - **Passlib** - Password hashing library
 - **bcrypt** - Password hashing algorithm
-- **Uvicorn** - ASGI server
+- **Granian** - High-performance ASGI server with hot reload support
 
 ## 📋 Prerequisites
 
@@ -132,7 +132,7 @@ user_service/
 
 4. **Run the application**
    ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   granian --interface asgi --host 0.0.0.0 --port 8000 --reload app.main:app
    ```
 
 5. **Access the API documentation**
@@ -301,12 +301,12 @@ curl -X PATCH "http://localhost:8000/users/profile" \
 
 ### Development
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+granian --interface asgi --host 0.0.0.0 --port 8000 --reload app.main:app
 ```
 
 ### Production
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+granian --interface asgi --host 0.0.0.0 --port 8000 --workers 4 app.main:app
 ```
 
 ## 🤝 Contributing
