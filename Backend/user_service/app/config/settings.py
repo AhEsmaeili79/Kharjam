@@ -1,35 +1,50 @@
-"""Application configuration settings"""
-import os
+"""
+Application configuration settings
+"""
+
 from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+# =========================
+# Database Configuration
+# =========================
+
 class DatabaseConfig(BaseSettings):
-    """Database configuration"""
+    db: str
+    user: str
+    password: str
+    host: str = "postgres"
+    port: int = 5432
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    @property
+    def database_url(self) -> str:
+        return (
+            f"postgresql://{self.user}:{self.password}"
+            f"@{self.host}:{self.port}/{self.db}"
+        )
 
-    db_name: str = os.getenv("POSTGRES_DB", "")
-    db_user: str = os.getenv("POSTGRES_USER", "")
-    db_password: str = os.getenv("POSTGRES_PASSWORD", "")
-    db_host: str = os.getenv("POSTGRES_HOST", "postgres")
-    db_port: int = int(os.getenv("POSTGRES_PORT", "5432"))
-    database_url: str = os.getenv("DATABASE_URL", "")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_prefix="POSTGRES_",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
+
+# =========================
+# Redis Configuration
+# =========================
 
 class RedisConfig(BaseSettings):
-    """Redis configuration"""
-
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
-
-    host: str = os.getenv("REDIS_HOST", "redis")
-    port: int = int(os.getenv("REDIS_PORT", "6379"))
-    password: Optional[str] = os.getenv("REDIS_PASSWORD")
-    db: int = int(os.getenv("REDIS_DB", "0"))
-    max_connections: int = int(os.getenv("REDIS_MAX_CONNECTIONS", "20"))
-    socket_timeout: int = int(os.getenv("REDIS_SOCKET_TIMEOUT", "5"))
-    socket_connect_timeout: int = int(os.getenv("REDIS_SOCKET_CONNECT_TIMEOUT", "5"))
+    host: str = "redis"
+    port: int = 6379
+    password: Optional[str] = None
+    db: int = 0
+    max_connections: int = 20
+    socket_timeout: int = 5
+    socket_connect_timeout: int = 5
 
     @property
     def redis_url(self) -> str:
@@ -37,59 +52,93 @@ class RedisConfig(BaseSettings):
             return f"redis://:{self.password}@{self.host}:{self.port}/{self.db}"
         return f"redis://{self.host}:{self.port}/{self.db}"
 
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_prefix="REDIS_",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+
+# =========================
+# RabbitMQ Configuration
+# =========================
 
 class RabbitMQConfig(BaseSettings):
-    """RabbitMQ configuration"""
+    host: str
+    port: int = 5672
+    username: str
+    password: str
+    virtual_host: str = "/"
+    connection_attempts: int = 3
+    retry_delay: float = 2.0
+    heartbeat: int = 600
+    message_ttl: int = 300000
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
-
-    host: str = os.getenv("RABBITMQ_HOST", "")
-    port: int = int(os.getenv("RABBITMQ_PORT", "5672"))
-    username: str = os.getenv("RABBITMQ_USERNAME", "")
-    password: str = os.getenv("RABBITMQ_PASSWORD", "")
-    virtual_host: str = os.getenv("RABBITMQ_VHOST", "/")
-    connection_attempts: int = int(os.getenv("RABBITMQ_CONNECTION_ATTEMPTS", "3"))
-    retry_delay: float = float(os.getenv("RABBITMQ_RETRY_DELAY", "2.0"))
-    heartbeat: int = int(os.getenv("RABBITMQ_HEARTBEAT", "600"))
+    # Exchanges
     otp_exchange: str = "user.otp.exchange"
     user_lookup_exchange: str = "user.lookup.exchange"
     exchange_type: str = "topic"
+
+    # Queues
     email_queue: str = "user.otp.email.queue"
     sms_queue: str = "user.otp.sms.queue"
     user_lookup_request_queue: str = "user.lookup.request.queue"
     user_lookup_response_queue: str = "user.lookup.response.queue"
+
+    # Routing Keys
     email_routing_key: str = "otp.email.send"
     sms_routing_key: str = "otp.sms.send"
     user_lookup_request_key: str = "user.lookup.request"
     user_lookup_response_key: str = "user.lookup.response"
-    message_ttl: int = int(os.getenv("RABBITMQ_MESSAGE_TTL", "300000"))
 
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_prefix="RABBITMQ_",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+
+# =========================
+# JWT Configuration
+# =========================
 
 class JWTConfig(BaseSettings):
-    """JWT configuration"""
+    secret_key: str
+    refresh_secret_key: str
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+    refresh_token_expire_days: int = 7
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
-    secret_key: str = os.getenv("SECRET_KEY", "")
-    refresh_secret_key: str = os.getenv("REFRESH_SECRET_KEY", "")
-    algorithm: str = os.getenv("ALGORITHM", "HS256")
-    access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
-    refresh_token_expire_days: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
+# =========================
+# Application Configuration
+# =========================
 
 class AppConfig(BaseSettings):
-    """Application configuration"""
+    pythonpath: Optional[str] = None
+    cors_origins: str = "*"
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
-    pythonpath: Optional[str] = os.getenv("PYTHONPATH")
-    cors_origins: str = os.getenv("CORS_ORIGINS", "*")
 
+# =========================
+# Global Instances
+# =========================
 
-# Global config instances
 database_config = DatabaseConfig()
 redis_config = RedisConfig()
 rabbitmq_config = RabbitMQConfig()
 jwt_config = JWTConfig()
 app_config = AppConfig()
-
