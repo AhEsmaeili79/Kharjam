@@ -99,14 +99,22 @@ def create_user_lookup_callback(handler: Callable) -> Callable:
     return callback
 
 
-# Global consumer instance
-_rabbitmq_consumer: Optional[RabbitMQConsumer] = None
-
-
 def get_rabbitmq_consumer() -> RabbitMQConsumer:
-    """Get or create RabbitMQ consumer"""
-    global _rabbitmq_consumer
-    if _rabbitmq_consumer is None:
-        _rabbitmq_consumer = RabbitMQConsumer()
-    return _rabbitmq_consumer
+    """Create a new RabbitMQ consumer instance.
+
+    Note:
+        We intentionally return a **new** `RabbitMQConsumer` on each call
+        instead of sharing a global singleton. Each consumer manages its
+        own `BlockingConnection`/channel, and we run multiple consumers
+        in different threads. Sharing a single consumer (and thus a single
+        connection/channel) across threads was leading to errors such as:
+
+            - \"Stream connection lost: IndexError('pop from an empty deque')\"
+            - \"start_consuming may not be called from the scope of another
+              BlockingConnection or BlockingChannel callback\"
+
+        By giving each high-level consumer manager its own `RabbitMQConsumer`,
+        we avoid cross-thread interference and re-entrancy issues in Pika.
+    """
+    return RabbitMQConsumer()
 

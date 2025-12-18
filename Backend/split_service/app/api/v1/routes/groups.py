@@ -4,14 +4,34 @@ from typing import List, Union
 from app.db.database import get_db
 from app.services.auth.jwt_handler import get_current_user
 from app.services.group_service import (
-    create_group, get_group, get_group_by_slug, get_user_groups, update_group, delete_group,
-    add_member_to_group, add_member_to_group_enhanced, remove_member_from_group, get_group_members,
-    create_group_category, get_group_categories, update_group_category, delete_group_category
+    create_group,
+    get_group,
+    get_group_by_slug,
+    get_user_groups,
+    update_group,
+    delete_group,
+    add_member_to_group,
+    add_member_to_group_enhanced,
+    remove_member_from_group,
+    get_group_members,
+    create_group_category,
+    get_group_categories,
+    update_group_category,
+    delete_group_category,
 )
 from app.schemas.group_schema import (
-    GroupCreate, GroupUpdate, GroupOut, GroupMemberCreate, GroupMemberOut,
-    GroupWithMembers, GroupCategoryCreate, GroupCategoryOut, GroupCategoryUpdate,
-    AsyncMemberRequestOut, PendingRequestStatusOut, SimpleGroupMemberCreate
+    GroupCreate,
+    GroupUpdate,
+    GroupOut,
+    GroupMemberCreate,
+    GroupMemberOut,
+    GroupWithMembers,
+    GroupCategoryCreate,
+    GroupCategoryOut,
+    GroupCategoryUpdate,
+    AsyncMemberRequestOut,
+    PendingRequestStatusOut,
+    SimpleGroupMemberCreate,
 )
 
 router = APIRouter(prefix="/groups", tags=["groups"])
@@ -61,6 +81,18 @@ def get_group_details(
         raise HTTPException(status_code=403, detail="You are not a member of this group")
 
     members = get_group_members(db, group.id)
+
+    # Enrich members with user info from user_service via RabbitMQ RPC.
+    # Failure to fetch user info must not break the endpoint.
+    from app.services.group_user_info_service import fetch_group_users
+
+    user_ids = [member.user_id for member in members if member.user_id]
+    try:
+        user_info_map = fetch_group_users(user_ids, group.id)
+    except Exception:
+        # Log inside the service; fall back to returning members without user data
+        user_info_map = {}
+
     return GroupWithMembers(
         id=group.id,
         name=group.name,
@@ -74,7 +106,8 @@ def get_group_details(
             group_id=member.group_id,
             user_id=member.user_id,
             is_admin=member.is_admin,
-            joined_at=member.joined_at
+            joined_at=member.joined_at,
+            user=user_info_map.get(member.user_id),
         ) for member in members]
     )
 
