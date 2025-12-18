@@ -12,4 +12,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["granian", "--interface", "asgi", "--host", "0.0.0.0", "--port", "8000", "app.main:app"]
+# migration commands or container restarts.
+CMD ["bash", "-c", "alembic upgrade head && granian --interface asgi --host 0.0.0.0 --port 8000 app.main:app"]
