@@ -9,6 +9,12 @@ from app.tasks.user_lookup_consumer import (
     stop_user_lookup_consumer,
     UserLookupConsumer,
 )
+from app.tasks.user_info_consumer import (
+    UserInfoConsumer,
+    get_user_info_consumer_manager,
+    start_user_info_consumer,
+    stop_user_info_consumer,
+)
 
 __all__ = [
     "get_rabbitmq_connection",
@@ -22,5 +28,9 @@ __all__ = [
     "start_user_lookup_consumer",
     "stop_user_lookup_consumer",
     "UserLookupConsumer",
+    "UserInfoConsumer",
+    "get_user_info_consumer_manager",
+    "start_user_info_consumer",
+    "stop_user_info_consumer",
 ]
 

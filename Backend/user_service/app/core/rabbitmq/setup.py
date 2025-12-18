@@ -30,6 +30,13 @@ def setup_rabbitmq() -> None:
             durable=True,
             auto_delete=False
         )
+        # Direct exchange for batched user info RPC
+        channel.exchange_declare(
+            exchange=rabbitmq_config.user_info_exchange,
+            exchange_type=rabbitmq_config.user_info_exchange_type,
+            durable=True,
+            auto_delete=False
+        )
 
         # Declare queues
         queues = [
@@ -37,6 +44,7 @@ def setup_rabbitmq() -> None:
             rabbitmq_config.sms_queue,
             rabbitmq_config.user_lookup_request_queue,
             rabbitmq_config.user_lookup_response_queue,
+            rabbitmq_config.user_info_request_queue,
         ]
         for queue in queues:
             channel.queue_declare(
@@ -44,7 +52,7 @@ def setup_rabbitmq() -> None:
                 durable=True,
                 exclusive=False,
                 auto_delete=False,
-                arguments={'x-message-ttl': rabbitmq_config.message_ttl}
+                arguments={"x-message-ttl": rabbitmq_config.message_ttl},
             )
 
         # Bind queues
@@ -67,6 +75,13 @@ def setup_rabbitmq() -> None:
             exchange=rabbitmq_config.user_lookup_exchange,
             queue=rabbitmq_config.user_lookup_response_queue,
             routing_key=rabbitmq_config.user_lookup_response_key
+        )
+
+        # Bind user info RPC queue (direct exchange)
+        channel.queue_bind(
+            exchange=rabbitmq_config.user_info_exchange,
+            queue=rabbitmq_config.user_info_request_queue,
+            routing_key=rabbitmq_config.user_info_request_routing_key,
         )
 
         logger.info("RabbitMQ setup completed successfully")

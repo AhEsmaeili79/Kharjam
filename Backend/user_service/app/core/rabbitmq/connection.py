@@ -56,15 +56,22 @@ class RabbitMQConnection:
         logger.info("RabbitMQ connection closed")
 
 
-# Global connection instance
-_rabbitmq_connection: Optional[RabbitMQConnection] = None
-
-
 def get_rabbitmq_connection() -> RabbitMQConnection:
-    """Get or create RabbitMQ connection"""
-    global _rabbitmq_connection
-    if _rabbitmq_connection is None:
-        _rabbitmq_connection = RabbitMQConnection()
-        _rabbitmq_connection.connect()
-    return _rabbitmq_connection
+    """Create a new RabbitMQ connection manager instance.
+
+    Note:
+        We intentionally return a **new** `RabbitMQConnection` on each call
+        instead of sharing a global instance. Pika's `BlockingConnection`
+        and channels are not thread-safe, and we run multiple consumers
+        in different threads. Sharing a single underlying connection/channel
+        across threads was causing errors like:
+
+            - "Stream connection lost: IndexError('pop from an empty deque')"
+            - `pika.exceptions.ChannelWrongStateError: Channel is closed.`
+
+        By giving each consumer (and each producer invocation) its own
+        connection manager instance, we avoid cross-thread interference.
+        Callers remain responsible for invoking `connect()` before use.
+    """
+    return RabbitMQConnection()
 
