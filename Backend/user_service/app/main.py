@@ -11,7 +11,13 @@ from app.apps.auth.models import OtpCode, BlacklistedToken
 from app.apps.users.api import router as users_router
 from app.apps.auth.api import router as auth_router
 from app.core.health import router as health_router
-from app.core.rabbitmq import init_rabbitmq, start_user_lookup_consumer, stop_user_lookup_consumer
+from app.core.rabbitmq import (
+    init_rabbitmq,
+    start_user_lookup_consumer,
+    stop_user_lookup_consumer,
+    start_user_info_consumer,
+    stop_user_info_consumer,
+)
 from app.core.redis.init import init_redis
 from app.core.exceptions import (
     http_exception_handler,
@@ -28,11 +34,13 @@ async def lifespan(app_instance: FastAPI):
     init_rabbitmq()
     init_redis()
     start_user_lookup_consumer()
+    start_user_info_consumer()
     
     yield
     
     # Shutdown
     stop_user_lookup_consumer()
+    stop_user_info_consumer()
 
 
 app = FastAPI(

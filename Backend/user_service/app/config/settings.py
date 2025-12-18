@@ -80,17 +80,25 @@ class RabbitMQConfig(BaseSettings):
     user_lookup_exchange: str = "user.lookup.exchange"
     exchange_type: str = "topic"
 
+    # User info RPC (direct exchange)
+    user_info_exchange: str = "user_info_exchange"
+    user_info_exchange_type: str = "direct"
+
     # Queues
     email_queue: str = "user.otp.email.queue"
     sms_queue: str = "user.otp.sms.queue"
     user_lookup_request_queue: str = "user.lookup.request.queue"
     user_lookup_response_queue: str = "user.lookup.response.queue"
 
+    # User info RPC queues
+    user_info_request_queue: str = "user_info_request_queue"
+
     # Routing Keys
     email_routing_key: str = "otp.email.send"
     sms_routing_key: str = "otp.sms.send"
     user_lookup_request_key: str = "user.lookup.request"
     user_lookup_response_key: str = "user.lookup.response"
+    user_info_request_routing_key: str = "user_info_request"
 
     model_config = SettingsConfigDict(
         env_file=".env",
