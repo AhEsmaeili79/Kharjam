@@ -21,17 +21,36 @@ class RabbitMQConfig(BaseSettings):
     # Exchange settings
     user_lookup_exchange: str = "user.lookup.exchange"
     exchange_type: str = "topic"
+
+    # User info RPC (direct exchange)
+    user_info_exchange: str = os.getenv("RABBITMQ_USER_INFO_EXCHANGE", "user_info_exchange")
+    user_info_exchange_type: str = "direct"
     
     # Queue settings
     user_lookup_queue: str = "user.lookup.request.queue"
     user_lookup_response_queue: str = "user.lookup.response.queue"
+
+    # User info RPC queues (request queue owned by user_service)
+    user_info_request_queue: str = os.getenv(
+        "RABBITMQ_USER_INFO_REQUEST_QUEUE", "user_info_request_queue"
+    )
     
     # Routing keys
     user_lookup_request_key: str = "user.lookup.request"
     user_lookup_response_key: str = "user.lookup.response"
+
+    # User info RPC routing key
+    user_info_request_routing_key: str = os.getenv(
+        "RABBITMQ_USER_INFO_REQUEST_ROUTING_KEY", "user_info_request"
+    )
     
     # Message settings
     message_ttl: int = int(os.getenv("RABBITMQ_MESSAGE_TTL", "300000"))  # 5 minutes in milliseconds
+
+    # RPC timeout (seconds) for user info calls
+    user_info_rpc_timeout: float = float(
+        os.getenv("USER_INFO_RPC_TIMEOUT_SECONDS", "5.0")
+    )
     
     class Config:
         env_file = ".env"

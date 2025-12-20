@@ -1,67 +1,72 @@
-import time
-from fastapi import FastAPI
+"""Main application entry point"""
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
 
-from app.db.database import Base, engine
-# Import models to ensure they're registered with Base
-from app.models import user, otp_code, blacklisted_token
-from app.api.v1.routes import users, auth, health
-from app.rabbitmq.setup import init_rabbitmq
-from app.redis.setup import init_redis
-from app.services.user_lookup_consumer import start_consumer
-from app.core.config import app_config
+# Import models to ensure they're registered with SQLAlchemy Base metadata
+from app.apps.users.models import User
+from app.apps.auth.models import OtpCode, BlacklistedToken
+from app.apps.users.api import router as users_router
+from app.apps.auth.api import router as auth_router
+from app.core.health import router as health_router
+from app.core.rabbitmq import (
+    init_rabbitmq,
+    start_user_lookup_consumer,
+    stop_user_lookup_consumer,
+    start_user_info_consumer,
+    stop_user_info_consumer,
+)
+from app.core.redis.init import init_redis
+from app.core.exceptions import (
+    http_exception_handler,
+    validation_exception_handler,
+    general_exception_handler,
+)
+from app.config import app_config
 
-# Create FastAPI application
+
+@asynccontextmanager
+async def lifespan(app_instance: FastAPI):
+    """Application lifespan context to manage startup/shutdown hooks."""
+    # Startup
+    init_rabbitmq()
+    init_redis()
+    start_user_lookup_consumer()
+    start_user_info_consumer()
+    
+    yield
+    
+    # Shutdown
+    stop_user_lookup_consumer()
+    stop_user_info_consumer()
+
+
 app = FastAPI(
     title="User Service",
     description="User management service with RabbitMQ and Redis integration",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize all services on startup"""
-    # Initialize database with retry logic
-    max_retries = 5
-    for attempt in range(max_retries):
-        try:
-            Base.metadata.create_all(bind=engine)
-            print("✅ Database tables created successfully")
-            break
-        except Exception as e:
-            if attempt < max_retries - 1:
-                wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s, 8s, 16s
-                print(f"⚠️  Warning: Failed to create database tables (attempt {attempt + 1}/{max_retries}): {e}")
-                print(f"   Retrying in {wait_time} seconds...")
-                time.sleep(wait_time)
-            else:
-                print(f"⚠️  Warning: Failed to create database tables after {max_retries} attempts: {e}")
-                print("   Application will continue but database operations may fail")
-    
-    # Initialize RabbitMQ
-    init_rabbitmq()
-    
-    # Initialize Redis
-    init_redis()
-    
-    # Start consumer
-    try:
-        start_consumer()
-        print("✅ Consumer started")
-    except Exception as e:
-        print(f"⚠️ Consumer failed: {e}")
-
-# Configure CORS middleware
-# Allow all origins for development
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=app_config.cors_origins.split(",") if app_config.cors_origins != "*" else ["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
 
-app.include_router(health.router)
-app.include_router(users.router)
-app.include_router(auth.router)
+# Register exception handlers for universal error response format
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, general_exception_handler)
+
+# Include routers
+app.include_router(health_router)
+app.include_router(users_router)
+app.include_router(auth_router)
+

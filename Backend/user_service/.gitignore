@@ -160,6 +160,9 @@ logs/
 *.ini
 *.cfg
 
+# keep Alembic config
+!alembic.ini
+
 # Uploaded files or generated assets
 /uploads/
 /static/generated/

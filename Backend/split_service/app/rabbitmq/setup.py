@@ -55,6 +55,15 @@ class RabbitMQSetup:
                 auto_delete=False
             )
             logger.info(f"Declared exchange: {rabbitmq_config.user_lookup_exchange}")
+
+            # Declare direct exchange for batched user info RPC (no queues here; owned by user_service)
+            self.channel.exchange_declare(
+                exchange=rabbitmq_config.user_info_exchange,
+                exchange_type=rabbitmq_config.user_info_exchange_type,
+                durable=True,
+                auto_delete=False,
+            )
+            logger.info(f"Declared exchange: {rabbitmq_config.user_info_exchange}")
             
             # Declare user lookup request queue
             try:

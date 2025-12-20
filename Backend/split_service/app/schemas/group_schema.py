@@ -36,6 +36,16 @@ class GroupOut(GroupBase):
     created_at: datetime
 
 
+class UserInfo(BaseModel):
+    """User info attached to group members, populated from user_service."""
+    user_id: str
+    name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    card_number: Optional[str] = None
+    card_holder_name: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+
 class GroupMemberBase(BaseModel):
     user_id: Optional[str] = None
     is_admin: bool = False
@@ -69,6 +79,7 @@ class GroupMemberOut(GroupMemberBase):
     id: str
     group_id: str
     joined_at: datetime
+    user: Optional[UserInfo] = None
 
 
 class AsyncMemberRequestOut(BaseModel):
