@@ -30,11 +30,11 @@ export const VerifyOtpApiController = (
     onSuccess: (res: any) => {
       const { access_token, refresh_token } = res.data;
       setTokens(access_token, refresh_token);
+      router.push("/panel");
       notify.success('')
       if (typeof window !== "undefined") {
         localStorage.removeItem("identifier");
       }
-      router.push("/panel");
     },
     onError: (err: any) => {
       notify.error(err.message);

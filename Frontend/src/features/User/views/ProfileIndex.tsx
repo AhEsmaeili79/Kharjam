@@ -5,7 +5,7 @@ import { CreditCardIcon } from "@/assets/icons/CreditCardIcon";
 import { ImageIcon } from "@/assets/icons/ImageIcon";
 
 const ProfileIndex = () => {
-  const { t, handleImage, preview, fileInputRef,handleClick } = useUser();
+  const { t, handleImage, preview, fileInputRef, handleClick, errors,watch, setValue, getProfileData ,getProfileDataIsPending , register, getValues} = useUser();
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
@@ -39,29 +39,56 @@ const ProfileIndex = () => {
         {t("profile-subHeader")}
       </p>
       <div className="w-11/12">
-        <Input placeholder={t("profile-fullname-placeholder")} />
+        <Input
+        // {...register('name')}
+          value={watch("name")}
+          placeholder={t("profile-fullname-placeholder")}
+          onChange={(e) => setValue("name", e.target.value ,{
+            shouldValidate: true
+         })}
+        />
+        {errors.name && (
+          <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+        )}
       </div>
       <div className="w-11/12 my-4">
         <Input
+        {...register('phone_number')}
+          // value={watch("phone_number")}
           placeholder={t("profile-phone-placeholder")}
+        //   onChange={(e) => setValue("phone_number", e.target.value,{
+        //     shouldValidate: true
+        //  })}
           addonAfter={
             <div className="text-xs bg-sky-300 px-2 py-1 rounded-md cursor-pointer text-gray-100">
               {t("verify")}
             </div>
           }
         />
+        {errors.phone_number && (
+          <p className="text-red-500 text-sm mt-1">{errors.phone_number.message}</p>
+        )}
       </div>
       <div className="w-11/12">
         <Input
+        {...register("email")}
+          // value={getValues("email")}
+          onChange={(e) => setValue("email", e.target.value,{
+            shouldValidate: true
+         })}
           placeholder={t("profile-email-placeholder")}
+
           addonAfter={
             <div className="text-xs bg-sky-300 px-2 py-1 rounded-md cursor-pointer text-gray-100">
               {t("verify")}
             </div>
           }
         />
-      </div>{" "}
-      <Button size="lg" className="w-2/3 mt-6">
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+        )}
+      </div>
+      <Button type="submit" size="lg" className="w-2/3 mt-6">
         {t("profile-submit-btn")}
       </Button>
       <Button size="lg" className="w-1/3 mt-6">
