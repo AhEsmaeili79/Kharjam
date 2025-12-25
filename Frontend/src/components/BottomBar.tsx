@@ -1,44 +1,54 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Home, Search, PlusCircle, Bell, User } from "lucide-react";
+import { DashboardIcon } from "@/assets/icons/DashboardIcon";
+import { UserIcon } from "@/assets/icons/UserIcon";
+import { BellIcon } from "@/assets/icons/BellIcon";
+import { DollarIcon } from "@/assets/icons/DollarIcon";
+import { UsersIcon } from "@/assets/icons/UsersICon";
 
 function BottomBar() {
-    const [selected, setSelected] = useState("");
-    const navItems = [
-        { id: "home", label: "Home", icon: <Home size={22} /> },
-        { id: "search", label: "Search", icon: <Search size={22} /> },
-        { id: "add", label: "Add", icon: <PlusCircle size={22} /> },
-        { id: "notifications", label: "Alerts", icon: <Bell size={22} /> },
-        { id: "profile", label: "Profile", icon: <User size={22} /> },
-    ];
-    return (
-        <div className="fixed bottom-0 w-full h-26 bg-transparent pointer-events-none">
-            {/* Curved container */}
-            <div className="fixed inset-x-0 bottom-0 h-16 bg-white rounded-t-3xl shadow-lg pointer-events-auto">
-                <div className="relative h-full flex items-center justify-around">
-                    {navItems.map((item) => {
-                        const isSel = selected === item.id;
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => setSelected(item.id)}
-                                className={cn(
-                                    "relative flex flex-col items-center justify-center transition-all duration-300 ease-out",
-                                    isSel
-                                        ? "-mt-8 bg-primary-500 text-white shadow-xl rounded-full w-16 h-16 animate-rebound"
-                                        : "text-gray-500 hover:text-primary-500 w-12 h-12 hover:-translate-y-1"
-                                )}
-                                style={{ pointerEvents: "auto" }}
-                            >
-                                {item.icon}
-                                <p>{item.label}</p>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
+  const [selected, setSelected] = useState("");
+  const navItems = [
+    {
+      id: "finance",
+      label: "finance",
+      icon: <DollarIcon className="w-6 h-6" />,
+    },
+    { id: "groups", label: "groups", icon: <UsersIcon className="w-6 h-6" /> },
+    { id: "Home", label: "Home", icon: <DashboardIcon className="w-6 h-6" /> },
+    {
+      id: "notifications",
+      label: "notification",
+      icon: <BellIcon className="w-6 h-6" />,
+    },
+    { id: "profile", label: "Profile", icon: <UserIcon className="w-6 h-6" /> },
+  ];
+  return (
+    <div className="fixed bottom-0 w-full h-26 bg-transparent pointer-events-none">
+      <div className="fixed inset-x-0 bottom-0 h-16 bg-back shadow-lg pointer-events-auto rounded-t-3xl">
+        <div className="relative h-full flex items-center justify-around">
+          {navItems.map((item) => {
+            const isSel = selected === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setSelected(item.id)}
+                className={cn(
+                  "relative flex flex-col items-center justify-center transition-all",
+                  isSel
+                    ? "border-t-2 bg-back border-sky-400 text-sky-400 font-semibold w-[86px] h-[86px] rounded-full"
+                    : "text-gray-500 hover:text-primary-500 w-12 h-12 hover:-translate-y-1"
+                )}
+              >
+                {item.icon}
+                <p>{item.label}</p>
+              </button>
+            );
+          })}
         </div>
-    );
+      </div>
+    </div>
+  );
 }
 
 export default BottomBar;

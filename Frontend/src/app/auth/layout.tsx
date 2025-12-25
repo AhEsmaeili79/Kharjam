@@ -19,10 +19,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div className="absolute top-5 left-5">
           <ChangeLocaleComponent />
         </div>
+
         {children}
       </div>
     </NextIntlClientProvider>
   );
 }
-
-
