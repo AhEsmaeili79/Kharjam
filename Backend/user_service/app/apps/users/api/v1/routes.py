@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, R
 from typing import Optional
 from sqlalchemy.orm import Session
 import httpx
-from app.db import get_db, SessionLocal
+from app.db import get_db
 from app.apps.users.models import User
 from app.apps.users.schemas import UserOut, UserUpdate, ErrorResponse
 from app.apps.users.services import UserService
@@ -16,14 +16,19 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 def _convert_user_avatar_url(user: User, request: Request) -> UserOut:
     """Convert user avatar URL from gdrive:// format to endpoint URL"""
-    if user.avatar_url and user.avatar_url.startswith('gdrive://'):
-        user_dict = {
-            **user.__dict__,
-            'avatar_url': convert_gdrive_url_to_endpoint_url(user.avatar_url, str(request.base_url))
-        }
-        user_dict.pop('_sa_instance_state', None)
-        return UserOut(**user_dict)
-    return user
+    user_out = UserOut.model_validate(user)
+    if user_out.avatar_url and user_out.avatar_url.startswith('gdrive://'):
+        user_out.avatar_url = convert_gdrive_url_to_endpoint_url(
+            user_out.avatar_url, str(request.base_url)
+        )
+    return user_out
+
+
+def _handle_avatar_deletion(user: User, drive_service: GoogleDriveService):
+    """Helper to delete avatar if exists"""
+    if user.avatar_url:
+        drive_service.delete_file(user.avatar_url)
+        user.avatar_url = None
 
 
 @router.get(
@@ -73,33 +78,29 @@ async def update_user_profile(
     # Handle profile image upload
     if profile_image and profile_image.filename and profile_image.filename.strip():
         validate_image_file(profile_image)
-        if current_user.avatar_url:
-            drive_service.delete_file(current_user.avatar_url)
+        _handle_avatar_deletion(current_user, drive_service)
         current_user.avatar_url = drive_service.upload_file(profile_image, current_user.id)
     
     # Handle profile image deletion
     elif delete_profile_image and delete_profile_image.lower() in ('true', '1', 'yes'):
-        if current_user.avatar_url:
-            drive_service.delete_file(current_user.avatar_url)
-            current_user.avatar_url = None
+        _handle_avatar_deletion(current_user, drive_service)
     
     # Update other fields if provided
-    update_data = {k: v for k, v in {
+    update_fields = {
         'name': name,
         'phone_number': phone_number,
         'email': email,
         'card_number': card_number,
         'card_holder_name': card_holder_name
-    }.items() if v is not None}
+    }
+    update_data = {k: v for k, v in update_fields.items() if v is not None}
     
     if update_data:
-        user = UserService.validate_and_update_user(current_user, UserUpdate(**update_data), db)
-    else:
-        user = current_user
+        UserService.validate_and_update_user(current_user, UserUpdate(**update_data), db)
     
     db.commit()
-    db.refresh(user)
-    return _convert_user_avatar_url(user, request)
+    db.refresh(current_user)
+    return _convert_user_avatar_url(current_user, request)
 
 
 @router.get(
@@ -113,23 +114,23 @@ async def update_user_profile(
 )
 async def get_avatar(
     filename: str,
+    db: Session = Depends(get_db),
     drive_service: GoogleDriveService = Depends(get_drive_service)
 ) -> Response:
     """Get avatar image from Google Drive"""
-    db = SessionLocal()
+    # Find user with avatar_url containing this filename
+    user = db.query(User).filter(User.avatar_url.like(f'%{filename}')).first()
+    
+    if not user or not user.avatar_url:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+    
+    file_id = drive_service._extract_file_id(user.avatar_url)
+    if not file_id:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+    
+    # Fetch image from Google Drive
+    view_url = drive_service.get_file_view_url(file_id)
     try:
-        # Find user with avatar_url containing this filename
-        user = db.query(User).filter(User.avatar_url.like(f'%{filename}')).first()
-        
-        if not user or not user.avatar_url:
-            raise HTTPException(status_code=404, detail="Avatar not found")
-        
-        file_id = drive_service._extract_file_id(user.avatar_url)
-        if not file_id:
-            raise HTTPException(status_code=404, detail="Avatar not found")
-        
-        # Fetch image from Google Drive
-        view_url = drive_service.get_file_view_url(file_id)
         async with httpx.AsyncClient() as client:
             response = await client.get(view_url, follow_redirects=True, timeout=30.0)
             if response.status_code != 200:
@@ -150,6 +151,4 @@ async def get_avatar(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch avatar: {str(e)}")
-    finally:
-        db.close()
 

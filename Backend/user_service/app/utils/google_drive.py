@@ -2,6 +2,7 @@
 import os
 import io
 import uuid
+import re
 from typing import Optional
 from fastapi import UploadFile, HTTPException
 from google.oauth2.credentials import Credentials
@@ -126,14 +127,19 @@ class GoogleDriveService:
     def _extract_file_id(self, url: str) -> Optional[str]:
         """Extract file ID from Google Drive URL"""
         if url.startswith('gdrive://'):
-            parts = url.replace('gdrive://', '').split('/')
-            return parts[0] if parts else None
+            match = re.match(r'gdrive://([^/]+)', url)
+            return match.group(1) if match else None
         
-        if 'id=' in url:
-            return url.split('id=')[1].split('&')[0]
-        elif '/file/d/' in url:
-            parts = url.split('/file/d/')
-            return parts[1].split('/')[0] if len(parts) > 1 else None
+        # Standard Google Drive URL patterns
+        patterns = [
+            r'[?&]id=([^&]+)',  # ?id=... or &id=...
+            r'/file/d/([^/]+)',  # /file/d/...
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)
         
         return None
     

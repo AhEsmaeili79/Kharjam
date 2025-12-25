@@ -1,10 +1,8 @@
 """User service"""
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
 from app.apps.users.models import User
 from app.apps.users.schemas import UserUpdate
-from app.apps.users.selectors import UserSelector
 from app.utils.validators import FIELD_VALIDATORS, normalize_phone_number
 from app.core.errors import UserError
 
@@ -28,11 +26,9 @@ class UserService:
             # Uniqueness checks
             if field == "phone_number":
                 normalized_phone = normalize_phone_number(value)
+                # Only check normalized phone since we always normalize
                 existing_user = db.query(User).filter(
-                    or_(
-                        User.phone_number == normalized_phone,
-                        User.phone_number == value
-                    ),
+                    User.phone_number == normalized_phone,
                     User.id != user.id
                 ).first()
                 if existing_user:

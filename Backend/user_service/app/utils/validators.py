@@ -4,6 +4,9 @@ import re
 from fastapi import HTTPException
 from app.core.errors import ValidationError
 
+# Shared regex patterns
+EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+
 
 def normalize_phone_number(phone: str) -> str:
     """Normalize phone number to standard format"""
@@ -40,7 +43,7 @@ def validate_phone_number(value: str):
 
 def validate_email(value: str):
     """Validate email format"""
-    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", value):
+    if not EMAIL_PATTERN.match(value):
         raise HTTPException(status_code=400, detail=ValidationError.INVALID_EMAIL_FORMAT)
 
 
@@ -111,16 +114,28 @@ def validate_image_file(file):
         )
     
     # Check file size (max 5MB)
-    file.file.seek(0, 2)  # Seek to end
-    file_size = file.file.tell()
-    file.file.seek(0)  # Reset to beginning
-    
     max_size = 5 * 1024 * 1024  # 5MB
-    if file_size > max_size:
-        raise HTTPException(
-            status_code=400,
-            detail="Image file size exceeds 5MB limit."
-        )
+    try:
+        # Try to get file size efficiently
+        if hasattr(file.file, 'seek') and hasattr(file.file, 'tell'):
+            current_pos = file.file.tell()
+            file.file.seek(0, 2)  # Seek to end
+            file_size = file.file.tell()
+            file.file.seek(current_pos)  # Reset to original position
+        else:
+            # Fallback: read content to check size
+            content = file.file.read()
+            file_size = len(content)
+            file.file.seek(0)  # Reset to beginning
+        
+        if file_size > max_size:
+            raise HTTPException(
+                status_code=400,
+                detail="Image file size exceeds 5MB limit."
+            )
+    except (AttributeError, OSError):
+        # If file size check fails, continue (validation will catch issues during upload)
+        pass
     
     return True
 

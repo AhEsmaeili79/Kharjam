@@ -22,11 +22,11 @@ def get_current_user(
     """Get current authenticated user"""
     token = credentials.credentials
 
-    # Check Redis blacklist
+    # Check Redis blacklist first (fast path)
     if TokenBlacklistService.is_blacklisted(token):
         raise HTTPException(status_code=401, detail=AuthError.TOKEN_BLACKLISTED)
 
-    # Check database blacklist
+    # Check database blacklist as fallback
     if TokenSelector.is_blacklisted(db, token):
         raise HTTPException(status_code=401, detail=AuthError.TOKEN_BLACKLISTED)
 
