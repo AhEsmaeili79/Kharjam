@@ -14,6 +14,9 @@ const ProfileIndex = () => {
     errors,
     watch,
     setValue,
+    handleSubmit,
+    updateProfileMutate,
+    updateProfileIsPending,
   } = useUser();
 
   return (
@@ -101,7 +104,17 @@ const ProfileIndex = () => {
           <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
         )}
       </div>
-      <Button type="submit" size="lg" className="w-2/3 mt-6">
+      <Button
+        onClick={() => {
+          handleSubmit(() => {
+            updateProfileMutate();
+          })();
+        }}
+        disabled={updateProfileIsPending}
+        type="submit"
+        size="lg"
+        className="w-2/3 mt-6"
+      >
         {t("profile-submit-btn")}
       </Button>
       <Button size="lg" className="w-1/3 mt-6">
