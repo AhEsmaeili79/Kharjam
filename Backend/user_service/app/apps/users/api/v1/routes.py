@@ -1,8 +1,9 @@
 """User API routes"""
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, Response
 from typing import Optional
 from sqlalchemy.orm import Session
-from app.db import get_db
+import httpx
+from app.db import get_db, SessionLocal
 from app.apps.users.models import User
 from app.apps.users.schemas import UserOut, UserUpdate, ErrorResponse
 from app.apps.users.services import UserService
@@ -22,6 +23,33 @@ def get_drive_service() -> GoogleDriveService:
     )
 
 
+def convert_gdrive_url_to_endpoint_url(gdrive_url: Optional[str], request: Request) -> Optional[str]:
+    """
+    Convert gdrive:// URL format to proper endpoint URL
+    
+    Args:
+        gdrive_url: URL in format gdrive://{file_id}/{filename}
+        request: FastAPI Request object to get base URL
+        
+    Returns:
+        Proper endpoint URL or None if invalid
+    """
+    if not gdrive_url:
+        return None
+    
+    if gdrive_url.startswith('gdrive://'):
+        # Extract filename from gdrive://{file_id}/{filename}
+        parts = gdrive_url.replace('gdrive://', '').split('/', 1)
+        if len(parts) == 2:
+            filename = parts[1]
+            # Return endpoint URL with filename
+            base_url = str(request.base_url).rstrip('/')
+            return f"{base_url}/users/avatar/{filename}"
+    
+    # Return as-is if already a proper URL
+    return gdrive_url
+
+
 @router.get(
     "/profile",
     response_model=UserOut,
@@ -33,9 +61,20 @@ def get_drive_service() -> GoogleDriveService:
     },
 )
 def get_current_user_info(
+    request: Request,
     current_user: User = Depends(get_current_user)
 ) -> UserOut:
     """Get current user profile"""
+    # Convert avatar_url if it's in gdrive:// format
+    if current_user.avatar_url and current_user.avatar_url.startswith('gdrive://'):
+        # Create a temporary user object with converted URL
+        user_dict = {
+            **current_user.__dict__,
+            'avatar_url': convert_gdrive_url_to_endpoint_url(current_user.avatar_url, request)
+        }
+        # Remove SQLAlchemy internal attributes
+        user_dict.pop('_sa_instance_state', None)
+        return UserOut(**user_dict)
     return current_user
 
 
@@ -52,6 +91,7 @@ def get_current_user_info(
     },
 )
 async def update_user_profile(
+    request: Request,
     name: Optional[str] = Form(None),
     phone_number: Optional[str] = Form(None),
     email: Optional[str] = Form(None),
@@ -121,5 +161,97 @@ async def update_user_profile(
     
     db.commit()
     db.refresh(user)
+    
+    # Convert avatar_url if it's in gdrive:// format
+    if user.avatar_url and user.avatar_url.startswith('gdrive://'):
+        # Create a temporary user object with converted URL
+        user_dict = {
+            **user.__dict__,
+            'avatar_url': convert_gdrive_url_to_endpoint_url(user.avatar_url, request)
+        }
+        # Remove SQLAlchemy internal attributes
+        user_dict.pop('_sa_instance_state', None)
+        return UserOut(**user_dict)
+    
     return user
+
+
+@router.get(
+    "/avatar/{filename:path}",
+    operation_id="getAvatarApi",
+    responses={
+        404: {"model": ErrorResponse, "description": "Avatar not found"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
+    },
+)
+async def get_avatar(
+    filename: str,
+    request: Request
+) -> Response:
+    """
+    Proxy endpoint to serve avatar images from Google Drive with proper filename
+    
+    The filename should be in format: profile_{user_id}_{uuid}.{extension}
+    This endpoint fetches the image from Google Drive and serves it with proper headers.
+    """
+    drive_service = get_drive_service()
+    
+    try:
+        # Extract file_id from filename by looking up in database
+        # Since we store gdrive://{file_id}/{filename}, we need to find the user with this filename
+        db = SessionLocal()
+        try:
+            # Find user with avatar_url containing this filename
+            user = db.query(User).filter(
+                User.avatar_url.like(f'%{filename}')
+            ).first()
+            
+            if not user or not user.avatar_url:
+                raise HTTPException(status_code=404, detail="Avatar not found")
+            
+            # Extract file_id from gdrive:// URL
+            if user.avatar_url.startswith('gdrive://'):
+                file_id = drive_service._extract_file_id(user.avatar_url)
+            else:
+                # Legacy format - extract from old URL
+                file_id = drive_service._extract_file_id(user.avatar_url)
+            
+            if not file_id:
+                raise HTTPException(status_code=404, detail="Avatar not found")
+            
+            # Get view URL from Google Drive (public access)
+            view_url = drive_service.get_file_view_url(file_id)
+            
+            # Fetch image from Google Drive
+            async with httpx.AsyncClient() as client:
+                response = await client.get(view_url, follow_redirects=True, timeout=30.0)
+                if response.status_code != 200:
+                    raise HTTPException(status_code=404, detail="Avatar not found")
+                
+                # Determine content type from filename extension
+                content_type = "image/jpeg"
+                if filename.lower().endswith('.png'):
+                    content_type = "image/png"
+                elif filename.lower().endswith('.jpg') or filename.lower().endswith('.jpeg'):
+                    content_type = "image/jpeg"
+                
+                # Return image with proper headers and filename
+                return Response(
+                    content=response.content,
+                    media_type=content_type,
+                    headers={
+                        "Content-Disposition": f'inline; filename="{filename}"',
+                        "Cache-Control": "public, max-age=31536000",  # Cache for 1 year
+                    }
+                )
+        finally:
+            db.close()
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch avatar: {str(e)}"
+        )
 

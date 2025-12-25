@@ -111,7 +111,8 @@ class GoogleDriveService:
             user_id: User ID for naming the file
             
         Returns:
-            Public URL of the uploaded file
+            URL with filename format: gdrive://{file_id}/{filename}
+            This format will be converted to a proper endpoint URL by the route handler
             
         Raises:
             HTTPException: If upload fails
@@ -154,9 +155,10 @@ class GoogleDriveService:
                 body={'role': 'reader', 'type': 'anyone'}
             ).execute()
             
-            # Get direct download link
+            # Return custom format: gdrive://{file_id}/{filename}
+            # This will be converted to /users/avatar/{filename} endpoint
             file_id = uploaded_file['id']
-            file_url = f"https://drive.google.com/uc?export=view&id={file_id}"
+            file_url = f"gdrive://{file_id}/{filename}"
             
             return file_url
             
@@ -208,10 +210,20 @@ class GoogleDriveService:
         
         Args:
             url: Google Drive URL (various formats)
+                - gdrive://{file_id}/{filename}
+                - https://drive.google.com/uc?export=view&id=FILE_ID
+                - https://drive.google.com/file/d/FILE_ID/view
             
         Returns:
             File ID or None if not found
         """
+        # Handle custom gdrive:// format
+        if url.startswith('gdrive://'):
+            # Format: gdrive://{file_id}/{filename}
+            parts = url.replace('gdrive://', '').split('/')
+            if parts:
+                return parts[0]
+        
         # Handle different URL formats
         if 'id=' in url:
             # Format: https://drive.google.com/uc?export=view&id=FILE_ID
@@ -226,3 +238,15 @@ class GoogleDriveService:
             return None
         
         return None
+    
+    def get_file_view_url(self, file_id: str) -> str:
+        """
+        Get direct view URL for a Google Drive file (public access)
+        
+        Args:
+            file_id: Google Drive file ID
+            
+        Returns:
+            Direct view URL
+        """
+        return f"https://drive.google.com/uc?export=view&id={file_id}"
