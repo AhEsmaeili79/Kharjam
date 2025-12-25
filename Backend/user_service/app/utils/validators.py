@@ -1,4 +1,5 @@
 """Validation utilities"""
+import os
 import re
 from fastapi import HTTPException
 from app.core.errors import ValidationError
@@ -65,6 +66,63 @@ def validate_role(value: str):
     """Validate role value"""
     if value not in ["user", "group_admin"]:
         raise HTTPException(status_code=400, detail=ValidationError.INVALID_ROLE)
+
+
+def validate_image_file(file):
+    """Validate image file format and size"""
+    from fastapi import UploadFile
+    
+    # Check if file is an UploadFile instance or has required attributes
+    if not isinstance(file, UploadFile):
+        # Check if it has the required attributes as a fallback
+        if not (hasattr(file, 'filename') and hasattr(file, 'content_type') and hasattr(file, 'file')):
+            raise HTTPException(
+                status_code=400, 
+                detail="Invalid file type. Expected a file upload."
+            )
+    
+    # Ensure file has a filename
+    if not file.filename or not file.filename.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="File must have a filename"
+        )
+    
+    # Check file extension
+    allowed_extensions = {'.jpg', '.jpeg', '.png'}
+    file_extension = os.path.splitext(file.filename.lower())[1]
+    
+    if file_extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid image format. Only JPG, JPEG, and PNG are allowed."
+        )
+    
+    # Check content type (if provided, otherwise rely on extension)
+    allowed_content_types = {
+        'image/jpeg',
+        'image/jpg',
+        'image/png'
+    }
+    if file.content_type is not None and file.content_type not in allowed_content_types:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid image content type. Only JPG, JPEG, and PNG are allowed."
+        )
+    
+    # Check file size (max 5MB)
+    file.file.seek(0, 2)  # Seek to end
+    file_size = file.file.tell()
+    file.file.seek(0)  # Reset to beginning
+    
+    max_size = 5 * 1024 * 1024  # 5MB
+    if file_size > max_size:
+        raise HTTPException(
+            status_code=400,
+            detail="Image file size exceeds 5MB limit."
+        )
+    
+    return True
 
 
 FIELD_VALIDATORS = {
