@@ -11,142 +11,81 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
 
-# Google Drive API scopes
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
+TOKEN_PATH = 'token.json'
 
 
 class GoogleDriveService:
     """Google Drive service for file operations"""
     
     def __init__(self, credentials_path: str, folder_id: str):
-        """
-        Initialize Google Drive service
-        
-        Args:
-            credentials_path: Path to client_secret.json
-            folder_id: Google Drive folder ID where files will be stored
-        """
         self.credentials_path = credentials_path
         self.folder_id = folder_id
         self.service = None
-        self._creds = None
-        # Don't authenticate at init - do it lazily when needed
     
     def _authenticate(self):
         """Authenticate and build Google Drive service"""
         if self.service is not None:
-            return  # Already authenticated
+            return
         
         creds = None
-        token_path = 'token.json'
         
-        # Load existing token if available
-        if os.path.exists(token_path):
+        # Load existing token
+        if os.path.exists(TOKEN_PATH):
             try:
-                creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+                creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
             except Exception:
-                # Token file is invalid, will need to re-authenticate
                 creds = None
         
-        # If there are no valid credentials, request authorization
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                try:
-                    creds.refresh(Request())
-                except Exception:
-                    # Refresh failed, need to re-authenticate
-                    creds = None
-            
-            if not creds or not creds.valid:
-                # Check if credentials file exists
-                if not os.path.exists(self.credentials_path):
-                    raise HTTPException(
-                        status_code=500,
-                        detail=f"Google Drive credentials file not found: {self.credentials_path}. Please ensure client_secret.json exists."
-                    )
-                
-                # Try to authenticate - in Docker, this will fail if no token.json exists
-                # User must pre-authenticate and provide token.json
-                try:
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        self.credentials_path, SCOPES)
-                    # Try local server first (for local dev)
-                    try:
-                        creds = flow.run_local_server(port=0, open_browser=False)
-                    except Exception:
-                        # In Docker, we can't authenticate interactively
-                        # User must provide token.json
-                        raise HTTPException(
-                            status_code=500,
-                            detail=(
-                                "Google Drive authentication required. token.json not found.\n"
-                                "To generate token.json:\n"
-                                "1. Run the service locally (outside Docker) once\n"
-                                "2. Complete OAuth flow in browser\n"
-                                "3. Copy token.json to Docker container at /user_service/token.json"
-                            )
-                        )
-                    
-                    # Save credentials for next run
-                    if creds:
-                        with open(token_path, 'w') as token:
-                            token.write(creds.to_json())
-                except HTTPException:
-                    raise
-                except Exception as e:
-                    raise HTTPException(
-                        status_code=500,
-                        detail=f"Google Drive authentication failed: {str(e)}. Please ensure token.json exists."
-                    )
+        # Refresh if expired
+        if creds and creds.expired and creds.refresh_token:
+            try:
+                creds.refresh(Request())
+            except Exception:
+                creds = None
         
-        self._creds = creds
+        # Re-authenticate if needed
+        if not creds or not creds.valid:
+            if not os.path.exists(self.credentials_path):
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Credentials file not found: {self.credentials_path}"
+                )
+            
+            try:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    self.credentials_path, SCOPES)
+                creds = flow.run_local_server(port=0, open_browser=False)
+                if creds:
+                    with open(TOKEN_PATH, 'w') as token:
+                        token.write(creds.to_json())
+            except Exception:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Authentication failed. Generate token.json using generate_token.py"
+                )
+        
         self.service = build('drive', 'v3', credentials=creds)
     
     def upload_file(self, file: UploadFile, user_id: str) -> str:
-        """
-        Upload file to Google Drive
-        
-        Args:
-            file: FastAPI UploadFile object
-            user_id: User ID for naming the file
-            
-        Returns:
-            URL with filename format: gdrive://{file_id}/{filename}
-            This format will be converted to a proper endpoint URL by the route handler
-            
-        Raises:
-            HTTPException: If upload fails
-        """
-        # Authenticate if not already done
+        """Upload file to Google Drive and return gdrive:// URL"""
         self._authenticate()
         
         try:
-            # Read file content
             file_content = file.file.read()
-            file.file.seek(0)  # Reset file pointer
+            file.file.seek(0)
             
-            # Generate unique filename
             file_extension = os.path.splitext(file.filename)[1] if file.filename else '.jpg'
             filename = f"profile_{user_id}_{uuid.uuid4().hex[:8]}{file_extension}"
             
-            # Create file metadata
-            file_metadata = {
-                'name': filename,
-                'parents': [self.folder_id]
-            }
-            
-            # Create media upload
-            media = MediaIoBaseUpload(
-                io.BytesIO(file_content),
-                mimetype=file.content_type or 'image/jpeg',
-                resumable=True
-            )
-            
-            # Upload file
             uploaded_file = self.service.files().create(
-                body=file_metadata,
-                media_body=media,
-                fields='id, webViewLink'
+                body={'name': filename, 'parents': [self.folder_id]},
+                media_body=MediaIoBaseUpload(
+                    io.BytesIO(file_content),
+                    mimetype=file.content_type or 'image/jpeg',
+                    resumable=True
+                ),
+                fields='id'
             ).execute()
             
             # Make file publicly viewable
@@ -155,122 +94,61 @@ class GoogleDriveService:
                 body={'role': 'reader', 'type': 'anyone'}
             ).execute()
             
-            # Return custom format: gdrive://{file_id}/{filename}
-            # This will be converted to /users/avatar/{filename} endpoint
-            file_id = uploaded_file['id']
-            file_url = f"gdrive://{file_id}/{filename}"
-            
-            return file_url
+            return f"gdrive://{uploaded_file['id']}/{filename}"
             
         except HttpError as error:
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to upload file to Google Drive: {str(error)}"
+                detail=f"Failed to upload file: {str(error)}"
             )
         except Exception as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"Unexpected error during file upload: {str(e)}"
+                detail=f"Upload error: {str(e)}"
             )
     
     def delete_file(self, file_url: str) -> bool:
-        """
-        Delete file from Google Drive using file URL
-        
-        Args:
-            file_url: Google Drive file URL
-            
-        Returns:
-            True if deleted successfully, False otherwise
-        """
-        # Authenticate if not already done
+        """Delete file from Google Drive"""
         self._authenticate()
         
         try:
-            # Extract file ID from URL
             file_id = self._extract_file_id(file_url)
             if not file_id:
                 return False
             
-            # Delete file
             self.service.files().delete(fileId=file_id).execute()
             return True
-            
         except HttpError as error:
-            if error.resp.status == 404:
-                # File not found, consider it deleted
-                return True
-            return False
+            return error.resp.status == 404
         except Exception:
             return False
     
     def _extract_file_id(self, url: str) -> Optional[str]:
-        """
-        Extract file ID from Google Drive URL
-        
-        Args:
-            url: Google Drive URL (various formats)
-                - gdrive://{file_id}/{filename}
-                - https://drive.google.com/uc?export=view&id=FILE_ID
-                - https://drive.google.com/file/d/FILE_ID/view
-            
-        Returns:
-            File ID or None if not found
-        """
-        # Handle custom gdrive:// format
+        """Extract file ID from Google Drive URL"""
         if url.startswith('gdrive://'):
-            # Format: gdrive://{file_id}/{filename}
             parts = url.replace('gdrive://', '').split('/')
-            if parts:
-                return parts[0]
+            return parts[0] if parts else None
         
-        # Handle different URL formats
         if 'id=' in url:
-            # Format: https://drive.google.com/uc?export=view&id=FILE_ID
             return url.split('id=')[1].split('&')[0]
         elif '/file/d/' in url:
-            # Format: https://drive.google.com/file/d/FILE_ID/view
             parts = url.split('/file/d/')
-            if len(parts) > 1:
-                return parts[1].split('/')[0]
-        elif '/folders/' in url:
-            # This is a folder URL, not a file
-            return None
+            return parts[1].split('/')[0] if len(parts) > 1 else None
         
         return None
     
     def get_file_view_url(self, file_id: str) -> str:
-        """
-        Get direct view URL for a Google Drive file (public access)
-        
-        Args:
-            file_id: Google Drive file ID
-            
-        Returns:
-            Direct view URL
-        """
+        """Get direct view URL for a Google Drive file"""
         return f"https://drive.google.com/uc?export=view&id={file_id}"
 
 
 def convert_gdrive_url_to_endpoint_url(gdrive_url: Optional[str], base_url: str) -> Optional[str]:
-    """
-    Convert gdrive:// URL format to proper endpoint URL
-    
-    Args:
-        gdrive_url: URL in format gdrive://{file_id}/{filename}
-        base_url: Base URL for the API (from request.base_url)
-        
-    Returns:
-        Proper endpoint URL or None if invalid
-    """
+    """Convert gdrive:// URL to API endpoint URL"""
     if not gdrive_url or not gdrive_url.startswith('gdrive://'):
         return gdrive_url
     
-    # Extract filename from gdrive://{file_id}/{filename}
     parts = gdrive_url.replace('gdrive://', '').split('/', 1)
     if len(parts) == 2:
-        filename = parts[1]
-        base_url = base_url.rstrip('/')
-        return f"{base_url}/users/avatar/{filename}"
+        return f"{base_url.rstrip('/')}/users/avatar/{parts[1]}"
     
     return gdrive_url
