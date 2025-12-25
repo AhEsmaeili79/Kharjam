@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import * as controller from "../helpers/controller";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
@@ -28,6 +28,7 @@ export const useUser = () => {
     controller.GetProfileApiController()
   );
 
+
   const {
     watch,
     setValue,
@@ -37,13 +38,21 @@ export const useUser = () => {
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     mode: "onBlur",
-    values:{
-      name:getProfileData?.name?? '',
-      email:getProfileData?.email ?? '',
-      phone_number:getProfileData?.phone_number ?? ''
-    }
+    values: {
+      name: getProfileData?.name ?? "",
+      email: getProfileData?.email ?? "",
+      phone_number: getProfileData?.phone_number ?? "",
+    },
   });
 
+  const { mutate: updateProfileMutate, isPending: updateProfileIsPending } =
+  useMutation(
+    controller.UpdateProfileApiController({
+      name: watch('name'),
+      email: watch('email'),
+      phone_number: watch('phone_number'),
+    })
+  );
 
   return {
     t,
@@ -58,5 +67,8 @@ export const useUser = () => {
     handleSubmit,
     errors,
     getValues,
+    updateProfileMutate,
+    updateProfileIsPending
+
   };
 };
