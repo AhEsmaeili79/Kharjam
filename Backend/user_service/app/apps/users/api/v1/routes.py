@@ -105,6 +105,7 @@ async def update_user_profile(
 @router.get(
     "/avatar/{filename:path}",
     operation_id="getAvatarApi",
+    include_in_schema=False,
     responses={
         404: {"model": ErrorResponse, "description": "Avatar not found"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
