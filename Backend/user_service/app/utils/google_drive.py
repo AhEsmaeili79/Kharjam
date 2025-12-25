@@ -250,3 +250,27 @@ class GoogleDriveService:
             Direct view URL
         """
         return f"https://drive.google.com/uc?export=view&id={file_id}"
+
+
+def convert_gdrive_url_to_endpoint_url(gdrive_url: Optional[str], base_url: str) -> Optional[str]:
+    """
+    Convert gdrive:// URL format to proper endpoint URL
+    
+    Args:
+        gdrive_url: URL in format gdrive://{file_id}/{filename}
+        base_url: Base URL for the API (from request.base_url)
+        
+    Returns:
+        Proper endpoint URL or None if invalid
+    """
+    if not gdrive_url or not gdrive_url.startswith('gdrive://'):
+        return gdrive_url
+    
+    # Extract filename from gdrive://{file_id}/{filename}
+    parts = gdrive_url.replace('gdrive://', '').split('/', 1)
+    if len(parts) == 2:
+        filename = parts[1]
+        base_url = base_url.rstrip('/')
+        return f"{base_url}/users/avatar/{filename}"
+    
+    return gdrive_url

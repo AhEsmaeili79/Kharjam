@@ -9,6 +9,8 @@ from app.apps.auth.services import TokenBlacklistService
 from app.apps.users.selectors import UserSelector
 from app.apps.users.models import User
 from app.core.errors import AuthError, UserError
+from app.utils.google_drive import GoogleDriveService
+from app.config.settings import google_drive_config
 
 security = HTTPBearer()
 
@@ -46,4 +48,12 @@ def extract_token(credentials: HTTPAuthorizationCredentials = Security(security)
     if not credentials:
         raise HTTPException(status_code=401, detail=AuthError.MISSING_AUTHORIZATION)
     return credentials.credentials
+
+
+def get_drive_service() -> GoogleDriveService:
+    """Get Google Drive service instance"""
+    return GoogleDriveService(
+        credentials_path=google_drive_config.credentials_path,
+        folder_id=google_drive_config.folder_id
+    )
 
