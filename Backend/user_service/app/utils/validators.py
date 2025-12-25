@@ -1,7 +1,11 @@
 """Validation utilities"""
+import os
 import re
 from fastapi import HTTPException
 from app.core.errors import ValidationError
+
+# Shared regex patterns
+EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
 
 def normalize_phone_number(phone: str) -> str:
@@ -39,7 +43,7 @@ def validate_phone_number(value: str):
 
 def validate_email(value: str):
     """Validate email format"""
-    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", value):
+    if not EMAIL_PATTERN.match(value):
         raise HTTPException(status_code=400, detail=ValidationError.INVALID_EMAIL_FORMAT)
 
 
@@ -65,6 +69,75 @@ def validate_role(value: str):
     """Validate role value"""
     if value not in ["user", "group_admin"]:
         raise HTTPException(status_code=400, detail=ValidationError.INVALID_ROLE)
+
+
+def validate_image_file(file):
+    """Validate image file format and size"""
+    from fastapi import UploadFile
+    
+    # Check if file is an UploadFile instance or has required attributes
+    if not isinstance(file, UploadFile):
+        # Check if it has the required attributes as a fallback
+        if not (hasattr(file, 'filename') and hasattr(file, 'content_type') and hasattr(file, 'file')):
+            raise HTTPException(
+                status_code=400, 
+                detail="Invalid file type. Expected a file upload."
+            )
+    
+    # Ensure file has a filename
+    if not file.filename or not file.filename.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="File must have a filename"
+        )
+    
+    # Check file extension
+    allowed_extensions = {'.jpg', '.jpeg', '.png'}
+    file_extension = os.path.splitext(file.filename.lower())[1]
+    
+    if file_extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid image format. Only JPG, JPEG, and PNG are allowed."
+        )
+    
+    # Check content type (if provided, otherwise rely on extension)
+    allowed_content_types = {
+        'image/jpeg',
+        'image/jpg',
+        'image/png'
+    }
+    if file.content_type is not None and file.content_type not in allowed_content_types:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid image content type. Only JPG, JPEG, and PNG are allowed."
+        )
+    
+    # Check file size (max 5MB)
+    max_size = 5 * 1024 * 1024  # 5MB
+    try:
+        # Try to get file size efficiently
+        if hasattr(file.file, 'seek') and hasattr(file.file, 'tell'):
+            current_pos = file.file.tell()
+            file.file.seek(0, 2)  # Seek to end
+            file_size = file.file.tell()
+            file.file.seek(current_pos)  # Reset to original position
+        else:
+            # Fallback: read content to check size
+            content = file.file.read()
+            file_size = len(content)
+            file.file.seek(0)  # Reset to beginning
+        
+        if file_size > max_size:
+            raise HTTPException(
+                status_code=400,
+                detail="Image file size exceeds 5MB limit."
+            )
+    except (AttributeError, OSError):
+        # If file size check fails, continue (validation will catch issues during upload)
+        pass
+    
+    return True
 
 
 FIELD_VALIDATORS = {

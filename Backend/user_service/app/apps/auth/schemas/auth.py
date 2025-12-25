@@ -46,10 +46,17 @@ class VerifyOTPRequest(BaseModel):
         return v.strip()
 
 
+class UserData(BaseModel):
+    """User data schema"""
+    name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
 class VerifyOTPResponse(BaseModel):
     """Verify OTP response schema"""
     access_token: str
     refresh_token: str
+    user_data: UserData
     is_new_user: bool
 
 

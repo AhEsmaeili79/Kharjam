@@ -142,6 +142,22 @@ class AppConfig(BaseSettings):
 
 
 # =========================
+# Google Drive Configuration
+# =========================
+
+class GoogleDriveConfig(BaseSettings):
+    folder_id: str
+    credentials_path: str = "client_secret.json"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_prefix="GOOGLE_DRIVE_",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+
+# =========================
 # Global Instances
 # =========================
 
@@ -150,3 +166,4 @@ redis_config = RedisConfig()
 rabbitmq_config = RabbitMQConfig()
 jwt_config = JWTConfig()
 app_config = AppConfig()
+google_drive_config = GoogleDriveConfig()
