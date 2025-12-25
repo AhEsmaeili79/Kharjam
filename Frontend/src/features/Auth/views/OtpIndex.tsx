@@ -11,9 +11,11 @@ const OtpIndex = () => {
     verifyOtpPending,
     handleOtpChange,
     otpValue,
-    isRTL
+    isRTL,
+    otpTimer,
+    handleResendOtp,
+    verifyOtpEnterHandler
   } = useAuth();
- 
 
   return (
     <div>
@@ -30,9 +32,10 @@ const OtpIndex = () => {
         <div className=" my-8" dir="ltr">
           <InputOTP
             autoFocus
-            maxLength={6}
+            maxLength={5}
             value={otpValue}
             onChange={handleOtpChange}
+            onKeyDown={verifyOtpEnterHandler}
           >
             <InputOTPSlot index={0} />
             <InputOTPSlot index={1} />
@@ -45,8 +48,17 @@ const OtpIndex = () => {
               isRTL ? " flex-row" : "flex-row-reverse"
             }`}
           >
-            <Timer storageKey="otp-timer" minutes={3} />
-            <p className="whitespace-nowrap">{t("otp-code")}</p>
+            {otpTimer && <Timer storageKey="otp-timer" minutes={3} />}
+            <p
+              onClick={() => {
+                !otpTimer && handleResendOtp();
+              }}
+              className={`whitespace-nowrap ${
+                !otpTimer ? "cursor-pointer" : "cursor-default"
+              }`}
+            >
+              {t("otp-code")}
+            </p>
           </div>
         </div>
       </div>

@@ -2,7 +2,6 @@
 
 import ChangeLocaleComponent from "@/components/ChangeLocaleComponent";
 import ToggleThemeComponent from "@/components/ToggleThemeComponent";
-import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 

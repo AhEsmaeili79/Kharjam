@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import { notify } from "@/components/ui/sonner";
 
 const LoginIndex = () => {
-  const {t, identifier, requestOtpMutate, requestOtpPending, handleInputChange } = useAuth();
+  const {t, identifier, requestOtpMutate, requestOtpPending, handleInputChange,requestOtpEnterHandler } = useAuth();
  
   return (
     <>
@@ -31,6 +31,7 @@ const LoginIndex = () => {
                 </span>
               }
               onChange={handleInputChange}
+              onKeyDown={requestOtpEnterHandler}
             />
           </div>
         </div>
