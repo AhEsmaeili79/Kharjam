@@ -6,7 +6,7 @@ type LocaleStore = {
 };
 
 export const useLocaleStore = create<LocaleStore>((set) => ({
-  locale: "fa",
+  locale: "fa", 
   setLocale: (locale) => {
     set({ locale });
     if (typeof window !== "undefined") {
