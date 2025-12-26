@@ -1,5 +1,5 @@
 """Auth API routes"""
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.apps.auth.schemas import (
@@ -7,6 +7,7 @@ from app.apps.auth.schemas import (
     RequestOTPResponse,
     VerifyOTPRequest,
     VerifyOTPResponse,
+    UserData,
     TokenResponse,
     RefreshRequest,
     LogoutResponse,
@@ -17,6 +18,7 @@ from app.apps.auth.selectors import TokenSelector
 from app.apps.users.models import User, UserRole
 from app.apps.users.selectors import UserSelector
 from app.utils.validators import normalize_phone_number
+from app.utils.google_drive import convert_gdrive_url_to_endpoint_url
 from app.core.dependencies import extract_token
 from app.core.errors import AuthError, UserError
 
@@ -86,7 +88,7 @@ def request_otp(request: RequestOTPRequest, background_tasks: BackgroundTasks, d
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
 )
-def verify_otp(request: VerifyOTPRequest, db: Session = Depends(get_db)):
+def verify_otp(request: VerifyOTPRequest, http_request: Request, db: Session = Depends(get_db)):
     """Verify OTP and authenticate"""
     user = UserSelector.get_by_identifier(db, request.identifier)
     if not user:
@@ -107,9 +109,21 @@ def verify_otp(request: VerifyOTPRequest, db: Session = Depends(get_db)):
         "user_id": user.id
     })
 
+    # Get user name and avatar_url
+    name = user.name if user.name and user.name.strip() else None
+    avatar_url = user.avatar_url
+    
+    # Convert avatar_url if it's a gdrive:// URL
+    if avatar_url:
+        avatar_url = convert_gdrive_url_to_endpoint_url(avatar_url, str(http_request.base_url))
+
+    # Create user_data object
+    user_data = UserData(name=name, avatar_url=avatar_url)
+
     return VerifyOTPResponse(
         access_token=access_token,
         refresh_token=refresh_token,
+        user_data=user_data,
         is_new_user=is_new_user
     )
 

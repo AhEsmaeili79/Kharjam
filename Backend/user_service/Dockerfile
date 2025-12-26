@@ -12,5 +12,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# migration commands or container restarts.
-CMD ["bash", "-c", "alembic upgrade head && granian --interface asgi --host 0.0.0.0 --port 8000 app.main:app"]
+CMD ["bash", "-c", "for i in {1..30}; do if alembic upgrade head 2>/dev/null; then echo \"Database migrations completed successfully\"; break; fi; echo \"Waiting for database... (attempt $i/30)\"; sleep 2; done && granian --interface asgi --host 0.0.0.0 --port 8000 app.main:app"]

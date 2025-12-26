@@ -1,10 +1,8 @@
 """User data access layer (Repository pattern)"""
 from typing import Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
 from app.apps.users.models import User
-from app.utils.validators import normalize_phone_number
-import re
+from app.utils.validators import normalize_phone_number, EMAIL_PATTERN
 
 
 class UserSelector:
@@ -24,18 +22,13 @@ class UserSelector:
     def get_by_phone(db: Session, phone_number: str) -> Optional[User]:
         """Get user by phone number"""
         normalized_phone = normalize_phone_number(phone_number)
-        return db.query(User).filter(
-            or_(
-                User.phone_number == normalized_phone,
-                User.phone_number == phone_number
-            )
-        ).first()
+        # Only check normalized phone since we always normalize
+        return db.query(User).filter(User.phone_number == normalized_phone).first()
 
     @staticmethod
     def get_by_identifier(db: Session, identifier: str) -> Optional[User]:
         """Get user by email or phone number"""
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        is_email = re.match(email_pattern, identifier) is not None
+        is_email = EMAIL_PATTERN.match(identifier) is not None
 
         if is_email:
             return UserSelector.get_by_email(db, identifier)
