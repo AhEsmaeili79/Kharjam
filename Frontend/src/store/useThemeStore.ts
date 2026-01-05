@@ -7,16 +7,8 @@ interface IThemeState {
 }
 
 const getInitialTheme = (): boolean => {
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("theme");
-    if (saved) {
-      return saved === "dark";
-    }
-    // If no theme saved, default to dark
-    localStorage.setItem("theme", "dark");
-    return true;
-  }
-  // Server-side default to dark
+  // Always default to dark theme to prevent hydration mismatch
+  // The actual theme will be applied via useEffect in the component
   return true;
 };
 

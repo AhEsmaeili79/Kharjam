@@ -1,12 +1,13 @@
 "use client";
-
-import ChangeLocaleComponent from "@/components/ChangeLocaleComponent";
-import ToggleThemeComponent from "@/components/ToggleThemeComponent";
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const t = useTranslations();
+  const router = useRouter();
+  useEffect(() =>{
+    router.push("panel/dashboard");
+  },[])
+
   const [dark, setDark] = useState(false);
   useEffect(() => {
     if (dark) {
@@ -15,14 +16,8 @@ export default function Home() {
       document.documentElement.classList.remove("dark");
     }
   }, [dark]);
-
+ 
   return (
-    <div className="flex-col">
-      <div className="w-full flex justify-end">
-      main
-       <ChangeLocaleComponent/>
-      <ToggleThemeComponent/>
-      </div>
-    </div>
+    <></>
   );
 }
