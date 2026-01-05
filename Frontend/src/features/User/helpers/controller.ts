@@ -15,12 +15,27 @@ export const GetProfileApiController = () =>
   });
 
   export const UpdateProfileApiController = (
-    body: UserUpdate
+    body: UserUpdate & { avatar?: File }
  ) => {
     const queryClient = useQueryClient();
     return {
        mutationKey: ["updateProfileDataApi"],
-       mutationFn: () => updateProfileApi(body),
+       mutationFn: () => {
+         // Create FormData for file upload
+         const formData = new FormData();
+
+         // Add text fields
+         if (body.name !== undefined && body.name !== null) formData.append('name', body.name);
+         if (body.email !== undefined && body.email !== null) formData.append('email', body.email);
+         if (body.phone_number !== undefined && body.phone_number !== null) formData.append('phone_number', body.phone_number);
+
+         // Add file if exists
+         if (body.avatar) {
+           formData.append('profile_image', body.avatar);
+         }
+
+         return updateProfileApi(formData);
+       },
        onSuccess: (res: any) => {
           notify.success(res.data.message);
           queryClient.invalidateQueries({

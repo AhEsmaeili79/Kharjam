@@ -16,5 +16,11 @@
   "profile-email-placeholder" : "Email",
   "profile-submit-btn":"save changes",
   "profile-cards-btn":"cards",
-  "verify":"verify"
+  "verify":"verify",
+  "profileNameMinShema": "Name must be at least 2 characters",
+  "profileNameMaxShema": "Name must be less than 100 characters",
+  "profilePhoneSchema": "Phone number is required",
+  "profilePhoneRequired": "Phone number cannot be empty",
+  "profilePhoneInvalid": "Please enter a valid phone number",
+  "profileEmailSchema": "Please enter a valid email address"
 }

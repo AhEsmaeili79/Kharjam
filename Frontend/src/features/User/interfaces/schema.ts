@@ -1,9 +1,12 @@
 import { z } from "zod";
 
-export const profileSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }).max(100, { message: "Name must be less than 100 characters" }),
-  phone_number: z.string().regex(/^(\+98|0)?9\d{9}$/, { message: "Please enter a valid Iranian phone number" }),
-  email: z.string().email({ message: "Please enter a valid email address" }).optional().or(z.literal("")),
+export const createProfileSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(2, { message: t('profileNameMinShema') }).max(100, { message: t('profileNameMaxShema') }),
+  phone_number: z.string()
+    .min(1, t('profilePhoneRequired'))
+    .regex(/^(\+98|0)?9\d{9}$/, t('profilePhoneInvalid')),
+  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, t('profileEmailSchema')).optional().or(z.literal("")),
+  avatar: z.instanceof(File).optional(),
 });
 
-export type ProfileFormData = z.infer<typeof profileSchema>;
+export type ProfileFormData = z.infer<ReturnType<typeof createProfileSchema>>;
