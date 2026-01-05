@@ -1,33 +1,56 @@
 // src/store/useThemeStore.ts
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 interface IThemeState {
   dark: boolean;
   toggleTheme: () => void;
+  setTheme: (dark: boolean) => void;
+  _hasHydrated: boolean;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
-const getInitialTheme = (): boolean => {
-  // Always default to dark theme to prevent hydration mismatch
-  // The actual theme will be applied via useEffect in the component
-  return true;
-};
+export const useThemeStore = create<IThemeState>()(
+  persist(
+    (set, get) => ({
+      dark: false, // Default to light theme, will be updated on hydration
+      _hasHydrated: false,
+      setHasHydrated: (hasHydrated: boolean) => set({ _hasHydrated: hasHydrated }),
+      toggleTheme: () => {
+        const current = get().dark;
+        const newValue = !current;
 
-export const useThemeStore = create<IThemeState>((set, get) => ({
-  dark: getInitialTheme(),
-  toggleTheme: () => {
-    const current = get().dark;
-    const newValue = !current;
+        if (typeof document !== "undefined") {
+          if (newValue) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        }
 
-    if (typeof document !== "undefined") {
-      if (newValue) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-      // Save to localStorage
-      localStorage.setItem("theme", newValue ? "dark" : "light");
+        set({ dark: newValue });
+      },
+      setTheme: (dark: boolean) => {
+        if (typeof document !== "undefined") {
+          if (dark) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        }
+
+        set({ dark });
+      },
+    }),
+    {
+      name: "theme-storage",
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHasHydrated(true);
+          // Don't apply theme class here - let ThemeInitializer handle it
+        }
+      },
     }
-
-    set({ dark: newValue });
-  },
-}));
+  )
+);

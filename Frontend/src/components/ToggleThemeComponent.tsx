@@ -6,14 +6,18 @@ import { SunIcon } from "@/assets/icons/SunIcon";
 import { useThemeStore } from "@/store/useThemeStore";
 
 const ToggleThemeComponent = () => {
-  const { dark, toggleTheme } = useThemeStore();
+  const { dark, toggleTheme, _hasHydrated } = useThemeStore();
+
+  // Only apply theme changes after hydration to prevent hydration mismatch
   useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+    if (_hasHydrated) {
+      if (dark) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
     }
-  }, [dark]);
+  }, [dark, _hasHydrated]);
 
   return (
     <div
