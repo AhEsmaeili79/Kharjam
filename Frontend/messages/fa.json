@@ -16,5 +16,12 @@
   "profile-email-placeholder" : "ایمیل",
   "profile-submit-btn":"ذخیره",
   "profile-cards-btn":"کارت‌ها",
-  "verify":"احراز"
+  "verify":"احراز",
+  "profileNameMinShema": "نام باید حداقل شامل 2 کاراکتر باشد",
+  "profileNameMaxShema": "نام نمیتواند بیشتر از 100 کاراکتر باشد",
+  "profilePhoneSchema": "شماره موبایل نمیتواند خالی باشد",
+  "profilePhoneRequired": "شماره موبایل نمی‌تواند خالی باشد",
+  "profilePhoneInvalid": "لطفاً شماره موبایل معتبر وارد کنید",
+  "profileEmailSchema": "آدرس ایمیل درستی وارد کنید."
+
 }

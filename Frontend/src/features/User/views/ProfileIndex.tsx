@@ -7,17 +7,18 @@ import { ImageIcon } from "@/assets/icons/ImageIcon";
 const ProfileIndex = () => {
   const {
     t,
-    handleImage,
-    preview,
-    fileInputRef,
-    handleClick,
-    errors,
     watch,
+    errors,
+    preview,
     setValue,
+    handleClick,
+    handleImage,
     handleSubmit,
+    fileInputRef,
     updateProfileMutate,
     updateProfileIsPending,
   } = useUser();
+
 
   return (
     <div className="w-full flex flex-col items-center justify-center">

@@ -1,11 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
 import { MoonIcon } from "@/assets/icons/MoonIcon";
 import { SunIcon } from "@/assets/icons/SunIcon";
 import { useThemeStore } from "@/store/useThemeStore";
 
 const ToggleThemeComponent = () => {
   const { dark, toggleTheme } = useThemeStore();
+
+  // Apply theme on component mount (client-side only)
+  useEffect(() => {
+    if (dark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [dark]);
 
   return (
     <div

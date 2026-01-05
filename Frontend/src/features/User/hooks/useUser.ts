@@ -1,9 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import * as controller from "../helpers/controller";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { profileSchema, ProfileFormData } from "../interfaces/schema";
+import { createProfileSchema, ProfileFormData } from "../interfaces/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export const useUser = () => {
@@ -12,6 +12,16 @@ export const useUser = () => {
 
   const [preview, setPreview] = useState("/character.png");
 
+  const { data: getProfileData, isPending: getProfileDataIsPending } = useQuery(
+    controller.GetProfileApiController()
+  );
+
+  useEffect(() => {
+    if (getProfileData?.profile_image) {
+      setPreview(getProfileData.profile_image);
+    }
+  }, [getProfileData?.profile_image]);
+
   const handleClick = () => {
     fileInputRef.current?.click();
   };
@@ -19,25 +29,20 @@ export const useUser = () => {
   const handleImage = (e: any) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const url = URL.createObjectURL(file);
     setPreview(url);
+    setValue("avatar", file, { shouldValidate: true });
   };
-
-  const { data: getProfileData, isPending: getProfileDataIsPending } = useQuery(
-    controller.GetProfileApiController()
-  );
-
 
   const {
     watch,
     setValue,
-    handleSubmit,
     getValues,
+    handleSubmit,
     formState: { errors },
   } = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-    mode: "onBlur",
+    resolver: zodResolver(createProfileSchema(t)),
+    mode: "all",
     values: {
       name: getProfileData?.name ?? "",
       email: getProfileData?.email ?? "",
@@ -46,29 +51,30 @@ export const useUser = () => {
   });
 
   const { mutate: updateProfileMutate, isPending: updateProfileIsPending } =
-  useMutation(
+    useMutation(
     controller.UpdateProfileApiController({
       name: watch('name'),
       email: watch('email'),
       phone_number: watch('phone_number'),
+      avatar: watch('avatar'),
     })
   );
 
   return {
     t,
+    watch,
+    errors,
     preview,
-    handleImage,
+    setValue,
+    getValues,
     handleClick,
+    handleImage,
+    handleSubmit,
     fileInputRef,
     getProfileData,
-    getProfileDataIsPending,
-    watch,
-    setValue,
-    handleSubmit,
-    errors,
-    getValues,
     updateProfileMutate,
-    updateProfileIsPending
+    updateProfileIsPending,
+    getProfileDataIsPending,
 
   };
 };
