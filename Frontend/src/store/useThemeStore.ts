@@ -1,4 +1,3 @@
-// src/store/useThemeStore.ts
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -13,7 +12,7 @@ interface IThemeState {
 export const useThemeStore = create<IThemeState>()(
   persist(
     (set, get) => ({
-      dark: false, // Default to light theme, will be updated on hydration
+      dark: false,
       _hasHydrated: false,
       setHasHydrated: (hasHydrated: boolean) => set({ _hasHydrated: hasHydrated }),
       toggleTheme: () => {
@@ -48,7 +47,6 @@ export const useThemeStore = create<IThemeState>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.setHasHydrated(true);
-          // Don't apply theme class here - let ThemeInitializer handle it
         }
       },
     }
