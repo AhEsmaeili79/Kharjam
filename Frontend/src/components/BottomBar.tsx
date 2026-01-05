@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { DashboardIcon } from "@/assets/icons/DashboardIcon";
 import { UserIcon } from "@/assets/icons/UserIcon";
@@ -7,7 +8,25 @@ import { DollarIcon } from "@/assets/icons/DollarIcon";
 import { UsersIcon } from "@/assets/icons/UsersICon";
 
 function BottomBar() {
+  const pathname = usePathname();
+  const router = useRouter();
   const [selected, setSelected] = useState("");
+
+  const pathToNavId: Record<string, string> = {
+    "/panel/dashboard": "Home",
+    "/panel/profile": "profile",
+  };
+
+  const navIdToPath: Record<string, string> = {
+    "Home": "/panel/dashboard",
+    "profile": "/panel/profile",
+  };
+
+  useEffect(() => {
+    const activeId = pathToNavId[pathname] || "";
+    setSelected(activeId);
+  }, [pathname]);
+
   const navItems = [
     {
       id: "finance",
@@ -32,7 +51,13 @@ function BottomBar() {
             return (
               <button
                 key={item.id}
-                onClick={() => setSelected(item.id)}
+                onClick={() => {
+                  const path = navIdToPath[item.id];
+                  if (path) {
+                    router.push(path);
+                  }
+                  setSelected(item.id);
+                }}
                 className={cn(
                   "relative flex flex-col items-center justify-center transition-all",
                   isSel
