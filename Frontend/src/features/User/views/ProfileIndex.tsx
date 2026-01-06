@@ -3,18 +3,30 @@ import { useUser } from "../hooks/useUser";
 import { Button } from "@/components/ui/button";
 import { CreditCardIcon } from "@/assets/icons/CreditCardIcon";
 import { ImageIcon } from "@/assets/icons/ImageIcon";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerTrigger,
+  DrawerComponent,
+} from "@/components/ui/drawer";
+import { useState } from "react";
 
 const ProfileIndex = () => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   const {
     t,
-    handleImage,
-    preview,
-    fileInputRef,
-    handleClick,
-    errors,
     watch,
+    errors,
+    preview,
     setValue,
+    handleClick,
+    handleImage,
     handleSubmit,
+    fileInputRef,
     updateProfileMutate,
     updateProfileIsPending,
   } = useUser();
@@ -117,10 +129,21 @@ const ProfileIndex = () => {
       >
         {t("profile-submit-btn")}
       </Button>
-      <Button size="lg" className="w-1/3 mt-6">
+      <Button
+        onClick={() => setIsDrawerOpen(true)}
+        size="lg"
+        className="w-1/3 mt-6"
+      >
         <CreditCardIcon />
         <span>{t("profile-cards-btn")}</span>
       </Button>
+      <DrawerComponent
+        content="content"
+        description="desc"
+        title="title"
+        open={isDrawerOpen}
+        setOpen={setIsDrawerOpen}
+      />
     </div>
   );
 };

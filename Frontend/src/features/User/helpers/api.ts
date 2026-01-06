@@ -31,11 +31,12 @@ const getProfileApi = (
  * @summary Update User Profile
  */
 const updateProfileApi = (
-    userUpdate: UserUpdate,
+    userUpdate: UserUpdate | FormData,
  ) => {
+      const isFormData = userUpdate instanceof FormData;
       return axiosInstance<UserOut>(
       {url: `/users/profile`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
+      headers: isFormData ? {'Content-Type': 'multipart/form-data'} : {'Content-Type': 'application/json'},
       data: userUpdate
     },
       );
