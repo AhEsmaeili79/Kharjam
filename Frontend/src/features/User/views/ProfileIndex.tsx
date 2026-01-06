@@ -4,14 +4,9 @@ import { Button } from "@/components/ui/button";
 import { CreditCardIcon } from "@/assets/icons/CreditCardIcon";
 import { ImageIcon } from "@/assets/icons/ImageIcon";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerTrigger,
   DrawerComponent,
 } from "@/components/ui/drawer";
+import { CreditCardManagement } from "@/components/CreditCardManagement";
 import { useState } from "react";
 
 const ProfileIndex = () => {
@@ -138,11 +133,11 @@ const ProfileIndex = () => {
         <span>{t("profile-cards-btn")}</span>
       </Button>
       <DrawerComponent
-        content="content"
-        description="desc"
-        title="title"
+        description="کارت های بانکی خود را مدیریت کنید"
+        title="مدیریت کارت ها"
         open={isDrawerOpen}
         setOpen={setIsDrawerOpen}
+        content={<CreditCardManagement />}
       />
     </div>
   );
