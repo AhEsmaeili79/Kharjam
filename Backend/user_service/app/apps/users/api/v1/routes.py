@@ -1,15 +1,19 @@
 """User API routes"""
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, Response, BackgroundTasks
 from typing import Optional
 from sqlalchemy.orm import Session
 import httpx
-from app.db import get_db
+import io
+import logging
+from app.db import get_db, SessionLocal
 from app.apps.users.models import User
 from app.apps.users.schemas import UserOut, UserUpdate, ErrorResponse
 from app.apps.users.services import UserService
 from app.core.dependencies import get_current_user, get_drive_service
 from app.utils.google_drive import convert_gdrive_url_to_endpoint_url, GoogleDriveService
 from app.utils.validators import validate_image_file
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -29,6 +33,60 @@ def _handle_avatar_deletion(user: User, drive_service: GoogleDriveService):
     if user.avatar_url:
         drive_service.delete_file(user.avatar_url)
         user.avatar_url = None
+
+
+class SimpleUploadFile:
+    """Simple UploadFile-like object for background tasks"""
+    def __init__(self, file_content: bytes, filename: str, content_type: str):
+        self.file = io.BytesIO(file_content)
+        self.filename = filename
+        self.content_type = content_type
+
+
+def _upload_profile_image_background(
+    file_content: bytes,
+    filename: str,
+    content_type: str,
+    user_id: str,
+    old_avatar_url: Optional[str]
+):
+    """Background task to upload profile image to Google Drive and update user"""
+    db = SessionLocal()
+    try:
+        # Create drive service instance directly (not using dependency injection)
+        from app.config.settings import google_drive_config
+        drive_service = GoogleDriveService(
+            credentials_path=google_drive_config.credentials_path,
+            folder_id=google_drive_config.folder_id
+        )
+        
+        # Delete old avatar if exists
+        if old_avatar_url:
+            try:
+                drive_service.delete_file(old_avatar_url)
+            except Exception as e:
+                logger.warning(f"Failed to delete old avatar for user {user_id}: {str(e)}")
+        
+        # Create UploadFile-like object for the background task
+        upload_file = SimpleUploadFile(file_content, filename, content_type)
+        
+        # Upload to Google Drive
+        avatar_url = drive_service.upload_file(upload_file, user_id)
+        
+        # Update user's avatar_url in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.avatar_url = avatar_url
+            db.commit()
+            logger.info(f"Successfully uploaded profile image for user {user_id}")
+        else:
+            logger.error(f"User {user_id} not found when updating avatar_url")
+            
+    except Exception as e:
+        logger.error(f"Failed to upload profile image for user {user_id}: {str(e)}", exc_info=True)
+        db.rollback()
+    finally:
+        db.close()
 
 
 @router.get(
@@ -63,6 +121,7 @@ def get_current_user_info(
 )
 async def update_user_profile(
     request: Request,
+    background_tasks: BackgroundTasks,
     name: Optional[str] = Form(None),
     phone_number: Optional[str] = Form(None),
     email: Optional[str] = Form(None),
@@ -75,11 +134,27 @@ async def update_user_profile(
     drive_service: GoogleDriveService = Depends(get_drive_service)
 ) -> UserOut:
     """Update user profile"""
-    # Handle profile image upload
+    # Handle profile image upload (async background processing)
     if profile_image and profile_image.filename and profile_image.filename.strip():
         validate_image_file(profile_image)
-        _handle_avatar_deletion(current_user, drive_service)
-        current_user.avatar_url = drive_service.upload_file(profile_image, current_user.id)
+        
+        # Read file content synchronously before request completes
+        file_content = await profile_image.read()
+        filename = profile_image.filename
+        content_type = profile_image.content_type or 'image/jpeg'
+        old_avatar_url = current_user.avatar_url
+        
+        # Add background task to upload image
+        background_tasks.add_task(
+            _upload_profile_image_background,
+            file_content,
+            filename,
+            content_type,
+            current_user.id,
+            old_avatar_url
+        )
+        
+        # Note: avatar_url will be updated in background, user will see old avatar until upload completes
     
     # Handle profile image deletion
     elif delete_profile_image and delete_profile_image.lower() in ('true', '1', 'yes'):
