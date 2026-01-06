@@ -8,7 +8,8 @@
   --color-text-secondary: var(--color-text-secondary);
   --color-text-link: var(--color-text-link);
   --color-input: var(--color-input);
-  --color-back: var(--color-back)
+  --color-back: var(--color-back);
+  --color-back-secondary: var(--color-back-secondary)
 }
 body{
   --font-fa: var(--font-baloo);
@@ -23,19 +24,21 @@ html[lang="en"] body {
 }
 
 :root {
-  --color-text-base: #414142; 
-  --color-text-secondary: #878F91; 
+  --color-text-base: #414142;
+  --color-text-secondary: #878F91;
   --color-text-link: #66A1CD;
   --color-input:#F7F6F6;
-  --color-back: #F5F5F5;  
+  --color-back: #F5F5F5;
+  --color-back-secondary: #E2F0F0;
 }
 
 .dark {
   --color-text-base: #E7ECEF;
-  --color-text-secondary: #C4C6C8; 
+  --color-text-secondary: #C4C6C8;
   --color-text-link: #66A1CD;
   --color-input: #3A5068;
   --color-back :#1A2537;
+  --color-back-secondary: #263650;
 }
 
 .scrollbar::-webkit-scrollbar {

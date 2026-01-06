@@ -48,6 +48,7 @@ export interface UserOut {
   phone_number: string;
   email: UserOutEmail;
   role: RoleEnum;
+  profile_image?: string;
 }
 
 export type UserUpdateName = string | null;
@@ -66,7 +67,7 @@ export interface UserUpdate {
   name?: UserUpdateName;
   phone_number?: UserUpdatePhoneNumber;
   email?: UserUpdateEmail;
-  avatar_url?: UserUpdateAvatarUrl;
+  profile_image?: UserUpdateAvatarUrl;
   card_number?: UserUpdateCardNumber;
   card_holder_name?: UserUpdateCardHolderName;
 }

@@ -3,12 +3,12 @@
 import { ReactNode, useEffect } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { useLocale } from "@/utils/useLocaleUtil";
-import ResponsiveLayout from "@/layout/ResponsiveLayout";
 import "../globals.css";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/tokenManager";
 import ToggleThemeComponent from "@/components/ToggleThemeComponent";
 import ChangeLocaleComponent from "@/components/ChangeLocaleComponent";
+import MobileLayout from "@/layout/MobileLayout";
 
 export default function PanelLayout({ children }: { children: ReactNode }) {
   const { mounted, currentLocale, messages } = useLocale();
@@ -20,6 +20,7 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
     }
   }, [mounted, router]);
 
+
   return (
     <NextIntlClientProvider locale={currentLocale} messages={messages}>
       <div className="auth-layout">
@@ -29,7 +30,8 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
         <div className="absolute top-5 left-5">
           <ChangeLocaleComponent />
         </div>
-        {mounted && <ResponsiveLayout>{children}</ResponsiveLayout>}
+        {mounted && <MobileLayout>{children}</MobileLayout>}
+        {/* {mounted && <ResponsiveLayout>{children}</ResponsiveLayout>} */}
       </div>
     </NextIntlClientProvider>
   );

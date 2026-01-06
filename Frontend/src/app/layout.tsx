@@ -5,6 +5,7 @@ import Providers from "./providers";
 import { Toaster } from "@/components/ui/sonner";
 import { Baloo_Bhaijaan_2 } from "next/font/google";
 import { Outfit } from "next/font/google";
+import ThemeInitializer from "@/components/ThemeInitializer";
 
 export const metadata: Metadata = {
   title: "Kharjam",
@@ -34,9 +35,9 @@ export default function RootLayout({
     <html
       lang={defaultLocale}
       dir={defaultLocale === "fa" ? "rtl" : "ltr"}
-      className={`${baloo.variable} ${Nunito.variable}`}
     >
-      <body>
+      <body className={`${baloo.variable} ${Nunito.variable}`}>
+        <ThemeInitializer />
         <Providers>
           {children}
           <Toaster
