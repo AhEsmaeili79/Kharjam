@@ -18,6 +18,8 @@ class RequestOTPRequest(BaseModel):
     @field_validator('purpose')
     @classmethod
     def validate_purpose(cls, v: str) -> str:
+        if not v or v.strip() == "":
+            return "auth"
         if v not in ["auth", "update"]:
             raise ValueError('Purpose must be either "auth" or "update"')
         return v
@@ -57,6 +59,8 @@ class VerifyOTPRequest(BaseModel):
     @field_validator('purpose')
     @classmethod
     def validate_purpose(cls, v: str) -> str:
+        if not v or v.strip() == "":
+            return "auth"
         if v not in ["auth", "update"]:
             raise ValueError('Purpose must be either "auth" or "update"')
         return v

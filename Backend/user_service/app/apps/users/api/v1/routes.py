@@ -10,7 +10,9 @@ from app.apps.users.models import User
 from app.apps.users.schemas import UserOut, UserUpdate, ErrorResponse
 from app.apps.auth.services import PendingUpdateService
 from app.apps.users.services import UserService
+from app.utils.validators import FIELD_VALIDATORS
 from app.core.dependencies import get_current_user, get_drive_service
+from app.core.errors import UserError
 from app.utils.google_drive import convert_gdrive_url_to_endpoint_url, GoogleDriveService
 from app.utils.validators import validate_image_file
 
@@ -165,16 +167,43 @@ async def update_user_profile(
     pending_updates = []
 
     if email is not None and email.strip():
-        # Cache email update instead of applying immediately
-        result = PendingUpdateService.cache_pending_update(current_user.id, "email", email.strip())
+        email_value = email.strip()
+        # Validate email format
+        email_validator = FIELD_VALIDATORS.get("email")
+        if email_validator:
+            email_validator(email_value)
+
+        # Check uniqueness in database
+        existing_user = db.query(User).filter(User.email == email_value, User.id != current_user.id).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail=UserError.EMAIL_ALREADY_REGISTERED)
+
+        # Cache email update only after validation
+        result = PendingUpdateService.cache_pending_update(current_user.id, "email", email_value)
         if result["cached"]:
             pending_updates.append("email")
         else:
             logger.error(f"Failed to cache email update for user {current_user.id}")
 
     if phone_number is not None and phone_number.strip():
-        # Cache phone number update instead of applying immediately
-        normalized_phone = normalize_phone_number(phone_number.strip())
+        phone_value = phone_number.strip()
+        # Validate phone number format
+        phone_validator = FIELD_VALIDATORS.get("phone_number")
+        if phone_validator:
+            phone_validator(phone_value)
+
+        # Normalize phone number
+        normalized_phone = normalize_phone_number(phone_value)
+
+        # Check uniqueness in database
+        existing_user = db.query(User).filter(
+            User.phone_number == normalized_phone,
+            User.id != current_user.id
+        ).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail=UserError.PHONE_ALREADY_REGISTERED)
+
+        # Cache phone number update only after validation
         result = PendingUpdateService.cache_pending_update(current_user.id, "phone_number", normalized_phone)
         if result["cached"]:
             pending_updates.append("phone_number")

@@ -1,5 +1,6 @@
 """Auth API routes"""
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
+from typing import Optional
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.apps.auth.schemas import (
@@ -19,7 +20,7 @@ from app.apps.users.models import User, UserRole
 from app.apps.users.selectors import UserSelector
 from app.utils.validators import normalize_phone_number
 from app.utils.google_drive import convert_gdrive_url_to_endpoint_url
-from app.core.dependencies import extract_token
+from app.core.dependencies import extract_token, get_current_user
 from app.core.errors import AuthError, UserError
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -30,11 +31,17 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
     response_model=RequestOTPResponse,
     operation_id="requestOtpApi",
     responses={
+        401: {"model": ErrorResponse, "description": "Unauthorized - Invalid token"},
         422: {"model": ErrorResponse, "description": "Validation error"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
 )
-def request_otp(request: RequestOTPRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def request_otp(
+    request: RequestOTPRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user)
+):
     """Request OTP"""
     if request.purpose == "auth":
         # Original auth logic
@@ -60,11 +67,12 @@ def request_otp(request: RequestOTPRequest, background_tasks: BackgroundTasks, d
         send_identifier = request.identifier
 
     elif request.purpose == "update":
-        # For updates, the identifier should be the user ID
-        user_id = request.identifier  # This should be the user ID for updates
-        user = UserSelector.get_by_id(db, user_id)
-        if not user:
-            raise HTTPException(status_code=404, detail=UserError.NOT_FOUND)
+        # For updates, user must be authenticated
+        if not current_user:
+            raise HTTPException(status_code=401, detail="Authentication required for profile updates")
+
+        user_id = current_user.id
+        user = current_user
 
         # Check for pending updates (auto-detect field)
         pending_updates = PendingUpdateService.get_all_pending_updates(user_id)
@@ -112,15 +120,20 @@ def request_otp(request: RequestOTPRequest, background_tasks: BackgroundTasks, d
 
 @router.post(
     "/verify-otp",
-    response_model=VerifyOTPResponse,
     operation_id="verifyOtpApi",
     responses={
         400: {"model": ErrorResponse, "description": "Bad request - Invalid OTP or user not found"},
+        401: {"model": ErrorResponse, "description": "Unauthorized - Invalid token"},
         422: {"model": ErrorResponse, "description": "Validation error"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
 )
-def verify_otp(request: VerifyOTPRequest, http_request: Request, db: Session = Depends(get_db)):
+def verify_otp(
+    request: VerifyOTPRequest,
+    http_request: Request,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user)
+):
     """Verify OTP and authenticate or apply pending updates"""
     identifier_type = OTPService.get_identifier_type(request.identifier)
 
@@ -164,11 +177,12 @@ def verify_otp(request: VerifyOTPRequest, http_request: Request, db: Session = D
         )
 
     elif request.purpose == "update":
-        # For updates, the identifier should be the user ID
-        user_id = request.identifier
-        user = UserSelector.get_by_id(db, user_id)
-        if not user:
-            raise HTTPException(status_code=404, detail=UserError.NOT_FOUND)
+        # For updates, user must be authenticated
+        if not current_user:
+            raise HTTPException(status_code=401, detail="Authentication required for profile updates")
+
+        user_id = current_user.id
+        user = current_user
 
         # Validate OTP (auto-detects field)
         is_valid, identifier_type = OTPService.validate_otp(user_id, request.otp_code, request.purpose)
