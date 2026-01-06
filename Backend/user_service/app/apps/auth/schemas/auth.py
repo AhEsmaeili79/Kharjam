@@ -6,6 +6,7 @@ from typing import Optional
 class RequestOTPRequest(BaseModel):
     """Request OTP schema"""
     identifier: str
+    purpose: str = "auth"  # "auth" for signup/login, "update" for profile updates
 
     @field_validator('identifier')
     @classmethod
@@ -13,6 +14,13 @@ class RequestOTPRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError('Identifier cannot be empty')
         return v.strip()
+
+    @field_validator('purpose')
+    @classmethod
+    def validate_purpose(cls, v: str) -> str:
+        if v not in ["auth", "update"]:
+            raise ValueError('Purpose must be either "auth" or "update"')
+        return v
 
 
 class RequestOTPResponse(BaseModel):
@@ -26,6 +34,7 @@ class VerifyOTPRequest(BaseModel):
     """Verify OTP schema"""
     identifier: str
     otp_code: str
+    purpose: str = "auth"  # "auth" for signup/login, "update" for profile updates
 
     @field_validator('identifier')
     @classmethod
@@ -44,6 +53,13 @@ class VerifyOTPRequest(BaseModel):
         if not v.strip().isdigit():
             raise ValueError('OTP code must contain only digits')
         return v.strip()
+
+    @field_validator('purpose')
+    @classmethod
+    def validate_purpose(cls, v: str) -> str:
+        if v not in ["auth", "update"]:
+            raise ValueError('Purpose must be either "auth" or "update"')
+        return v
 
 
 class UserData(BaseModel):

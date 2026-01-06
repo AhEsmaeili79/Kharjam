@@ -8,6 +8,7 @@ import logging
 from app.db import get_db, SessionLocal
 from app.apps.users.models import User
 from app.apps.users.schemas import UserOut, UserUpdate, ErrorResponse
+from app.apps.auth.services import PendingUpdateService
 from app.apps.users.services import UserService
 from app.core.dependencies import get_current_user, get_drive_service
 from app.utils.google_drive import convert_gdrive_url_to_endpoint_url, GoogleDriveService
@@ -160,22 +161,49 @@ async def update_user_profile(
     elif delete_profile_image and delete_profile_image.lower() in ('true', '1', 'yes'):
         _handle_avatar_deletion(current_user, drive_service)
     
-    # Update other fields if provided
-    update_fields = {
+    # Handle email and phone number updates separately - they need OTP verification
+    pending_updates = []
+
+    if email is not None and email.strip():
+        # Cache email update instead of applying immediately
+        result = PendingUpdateService.cache_pending_update(current_user.id, "email", email.strip())
+        if result["cached"]:
+            pending_updates.append("email")
+        else:
+            logger.error(f"Failed to cache email update for user {current_user.id}")
+
+    if phone_number is not None and phone_number.strip():
+        # Cache phone number update instead of applying immediately
+        normalized_phone = normalize_phone_number(phone_number.strip())
+        result = PendingUpdateService.cache_pending_update(current_user.id, "phone_number", normalized_phone)
+        if result["cached"]:
+            pending_updates.append("phone_number")
+        else:
+            logger.error(f"Failed to cache phone number update for user {current_user.id}")
+
+    # Update other fields immediately (name, card details)
+    immediate_update_fields = {
         'name': name,
-        'phone_number': phone_number,
-        'email': email,
         'card_number': card_number,
         'card_holder_name': card_holder_name
     }
-    update_data = {k: v for k, v in update_fields.items() if v is not None}
-    
-    if update_data:
-        UserService.validate_and_update_user(current_user, UserUpdate(**update_data), db)
-    
+    immediate_update_data = {k: v for k, v in immediate_update_fields.items() if v is not None}
+
+    if immediate_update_data:
+        UserService.validate_and_update_user(current_user, UserUpdate(**immediate_update_data), db)
+
     db.commit()
     db.refresh(current_user)
-    return _convert_user_avatar_url(current_user, request)
+
+    # Create response
+    response_data = _convert_user_avatar_url(current_user, request)
+
+    # Add information about pending updates
+    if pending_updates:
+        response_data.pending_updates = pending_updates
+        response_data.message = f"Profile updated. Pending verification for: {', '.join(pending_updates)}"
+
+    return response_data
 
 
 @router.get(
