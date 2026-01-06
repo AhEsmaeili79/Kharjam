@@ -20,7 +20,7 @@ from app.apps.users.models import User, UserRole
 from app.apps.users.selectors import UserSelector
 from app.utils.validators import normalize_phone_number
 from app.utils.google_drive import convert_gdrive_url_to_endpoint_url
-from app.core.dependencies import extract_token, get_current_user
+from app.core.dependencies import extract_token, get_current_user, get_current_user_optional
 from app.core.errors import AuthError, UserError
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -40,7 +40,7 @@ def request_otp(
     request: RequestOTPRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """Request OTP"""
     if request.purpose == "auth":
@@ -132,7 +132,7 @@ def verify_otp(
     request: VerifyOTPRequest,
     http_request: Request,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """Verify OTP and authenticate or apply pending updates"""
     identifier_type = OTPService.get_identifier_type(request.identifier)

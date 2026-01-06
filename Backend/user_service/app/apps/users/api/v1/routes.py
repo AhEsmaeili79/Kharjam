@@ -10,7 +10,7 @@ from app.apps.users.models import User
 from app.apps.users.schemas import UserOut, UserUpdate, ErrorResponse
 from app.apps.auth.services import PendingUpdateService
 from app.apps.users.services import UserService
-from app.utils.validators import FIELD_VALIDATORS
+from app.utils.validators import FIELD_VALIDATORS, normalize_phone_number
 from app.core.dependencies import get_current_user, get_drive_service
 from app.core.errors import UserError
 from app.utils.google_drive import convert_gdrive_url_to_endpoint_url, GoogleDriveService
